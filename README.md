@@ -1,290 +1,357 @@
 # Paper List for LLM Multi-Agent Communication Topology
 
-**大模型多智能体系统的通信拓扑：设计、优化与自适应**
-
-*Communication Topology in LLM-Based Multi-Agent Systems: Design, Optimization, and Adaptation*
-
-面向初学者的大模型多智能体通信与拓扑学习清单。
-
-本版核对日期：2026-09-05。收录 13 篇 LLM 相关论文与 2 篇历史背景论文。它是精选入门清单，不是穷尽式综述；2026 年工作放在进阶部分，不把新预印本称为经典。
-
-组织形式参考 [Paper-List-for-Prototypical-Learning](https://github.com/BeistMedAI/Paper-List-for-Prototypical-Learning) 的主题分类方式。各条目的解释为本清单独立整理。主体按“通信结构在何时、根据什么确定”分类；算法、规模与任务作为标签，阅读顺序另列。
-
-## 目录
-
-- [研究范围与群体智能](#scope)
-- [主分类标准](#taxonomy)
-- [I. 人工预设结构 · 拓扑设计](#fixed)
-- [II. 提前优化、之后复用 · 拓扑优化](#offline)
-- [III. 根据当前题目生成 · 任务自适应拓扑](#conditioned)
-- [IV. 根据执行反馈调整 · 动态拓扑](#online)
-- [附录：基础对照与评估](#evaluation)
-- [附录：历史背景](#history)
-- [智能体数量与模型规模](#scale)
-- [阅读与复现实践路线](#roadmap)
-- [以后如何添加论文](#template)
-
-<a id="scope"></a>
-## 研究范围与群体智能
-
-核心问题：在给定任务、基础模型和预算下，怎样安排多个智能体的信息流，使整个系统更准确、更经济或更可靠？
-
-节点在不同论文中含义不同：可能是一个带角色和独立上下文的智能体，也可能仅是一次 LLM 调用或一个工具操作。边通常表示信息可见性或依赖关系。比较论文前，先确认节点、边、轮次各自的定义。
-
-它与群体智能有交集：都关注个体互动如何影响集体表现。传统群体智能尤其强调局部互动、分布式规则和自组织，Boids 是一个直观例子；LLM 协作也可能采用中央主管或统一训练的图设计器，因此不能把所有 LLM 多智能体系统都称为严格意义上的去中心化群体智能。[Reynolds 原文与作者说明](https://www.red3d.com/cwr/papers/1987/boids.html)
-
-拓扑方法是在设计信息流；harness 是执行模型调用、工具、消息和状态管理的运行程序。harness 可以实现某种拓扑，也可以执行动态拓扑策略。
-
-本清单以智能体之间的通信为主。单个模型内部的 attention、MoE 路由、GraphRAG 知识图谱不是同一个研究对象。
-
-<a id="taxonomy"></a>
-## 主分类标准
-
-只用一条主轴：**对一道新题，通信结构在什么时候、依据什么被确定？**
-
-| 主类 | 结构决定的时机与依据 | 代表工作 |
-|---|---|---|
-| I. 人工预设结构（拓扑设计） | 人提前规定连接，执行时沿用；实验可对比多种预设图 | Sparse MAD 的主要实验、MacNet 的拓扑比较 |
-| II. 提前优化、之后复用（拓扑优化） | 在训练或校准题上搜索、学习或剪枝，供后续题目复用 | GPTSwarm 的连接优化、AgentPrune 的多查询剪枝设置 |
-| III. 根据当前题目生成（任务自适应拓扑） | 看见一道新题后，为它生成通信结构 | Input Conditioned Graph Generation、G-Designer、ARG-Designer |
-| IV. 根据执行反馈调整（动态拓扑） | 获得中间结果后，调整参与者、连接或继续通信的安排 | DyLAN、TodyComm |
-
-这是按核心机制组织的阅读地图，不是互斥的学术定理。同一框架可能覆盖多个阶段：如 DyLAN 包含提前选队与运行时协作，AgentPrune 也有不同查询设置。每篇先放在最方便理解其主贡献的位置，并记录跨类机制。
-
-GNN、强化学习、搜索和剪枝是“如何求解”的算法标签；智能体数与模型大小是实验设置；数学、代码与问答是任务标签；失败与预算分析是评估材料。它们不与上述四类并列。
-
-每篇另记：优化节点/角色/边/消息/轮次中的哪些对象，以及是否存在中央控制器。
-
-<a id="fixed"></a>
 ## I. 人工预设结构 · 拓扑设计
 
-### I1. Improving Multi-Agent Debate with Sparse Communication Topology — Sparse MAD
+- [[2023-EMNLP]](https://aclanthology.org/2023.emnlp-main.936/) **Exchange-of-Thought: Enhancing Large Language Model Capabilities through Cross-Model Communication** [PDF](https://arxiv.org/pdf/2312.01823v1) [🐙 Code](https://github.com/yinzhangyue/EoT)
+  - 简介（中文）：针对单个模型的推理受自身知识和判断限制的问题，EoT 让模型交换推理链与答案，按 Memory、Report、Relay、Debate 四种预设协议控制信息共享、汇报、接力或讨论方式。收到其他模型的信息后，模型重新推理；置信度评估用于减轻错误推理链的影响。论文比较这些协议的推理效果与通信量，研究外部意见在怎样的信息流中更有帮助，连接方式本身不通过训练学习。 **主要结论：** 在论文的复杂推理任务中，跨模型交流优于所比较的独立推理基线，并可兼顾成本；不同通信协议的对比支持关注信息传递方式，而不仅是参与模型的数量。
+  - Intro (EN): EoT addresses the limits of isolated reasoning by exchanging reasoning chains and answers between models. Four predefined protocols—Memory, Report, Relay, and Debate—organize sharing, reporting, relaying, or discussion. Models reconsider their answers using the received information, with confidence evaluation mitigating unreliable reasoning. Experiments compare reasoning performance and communication volume to study how information-flow arrangements affect the value of external opinions; the protocols themselves are not learned graphs. **Findings:** On the evaluated reasoning tasks, organized cross-model exchange improves over the compared independent-reasoning baselines while remaining cost-effective; protocol comparisons highlight how information is exchanged.
 
-- **作者 / 年份 / 发表**：Yunxuan Li 等；Findings of EMNLP 2024。
-- **入口**：[正式论文](https://aclanthology.org/2024.findings-emnlp.427/) · [方法全文](https://arxiv.org/html/2406.11776)。
-- **方法**：减少辩论中的同伴可见连接，比较不同密度的图。
-- **阅读重点**：信息独立性、错误传播与成本之间的关系。
-- **边界**：主要比较静态规则图，也有动态概率连接的探索；不能把“稀疏有益”解释为“边越少越好”。
-- **建议**：第一篇拓扑机制复现，优先于直接训练 G-Designer。
+  [![eot：原论文 Figure 3](https://arxiv.org/html/2312.01823v1/EoT-communication.png)](https://aclanthology.org/2023.emnlp-main.936/)
 
-### I2. Scaling Large Language Model-based Multi-Agent Collaboration — MacNet
+- [[2023-NeurIPS]](https://proceedings.neurips.cc/paper/2023/hash/a3621ee907def47c1b952ade25c67698-Abstract-Conference.html) **CAMEL: Communicative Agents for “Mind” Exploration of Large Language Model Society** [PDF](https://arxiv.org/pdf/2303.17760v2) [🐙 Code](https://github.com/camel-ai/camel)
+  - 简介（中文）：针对多个模型难以持续分工协作的问题，CAMEL 先把用户想法细化为任务，再用角色提示构造固定的 AI user 与 AI assistant：前者逐步提出指令，后者执行并返回结果，交替对话直至终止。它依靠任务约束、角色约束和对话协议维持合作，而不训练通信图；论文同时分析角色混淆、空转和终止行为，并用这些对话构建数据集。 **主要结论：** 角色扮演能够生成持续的协作对话，但实验也观察到角色混淆、空转和终止问题；角色及输出格式提示会影响这些行为，自动交流不等于稳定完成任务。
+  - Intro (EN): CAMEL turns an initial idea into a specified task and assigns complementary AI-user and AI-assistant roles through inception prompts. The user agent issues instructions and the assistant responds, repeating this fixed interaction until termination. Cooperation is organized through prompting and a role-playing protocol rather than learned edges. The paper also studies role confusion, unproductive exchanges, and termination behavior, and collects the resulting conversations as datasets. **Findings:** Role-playing generates sustained cooperative conversations, but role confusion, unproductive exchanges, and termination problems remain; prompt and output-format choices affect these behaviors.
 
-- **作者 / 年份 / 发表**：Chen Qian 等；2024 首发，ICLR 2025（arXiv 页面确认录用）。
-- **入口**：[论文](https://arxiv.org/abs/2406.07155)。
-- **方法**：以有向无环图组织协作，比较结构与规模；作者报告了超过千个智能体的扩展实验。
-- **阅读重点**：节点怎么计数、结构怎么生成、规模增加时质量与成本如何变化。
-- **边界**：千级是规模研究案例，不是入门实验的默认配置；曲线不能外推成“无限增加智能体就一直变好”。
-- **建议**：必读，适合理解网络结构与集体表现的关系。
+  [![camel：原论文 Figure 1](https://arxiv.org/html/2303.17760v2/pipeline.png)](https://proceedings.neurips.cc/paper/2023/hash/a3621ee907def47c1b952ade25c67698-Abstract-Conference.html)
 
-<a id="offline"></a>
+- [[2024-ICLR]](https://arxiv.org/abs/2308.00352) **MetaGPT: Meta Programming for A Multi-Agent Collaborative Framework** [PDF](https://arxiv.org/pdf/2308.00352) [🐙 Code](https://github.com/geekan/MetaGPT)
+  - 简介（中文）：针对简单串联模型容易让早期错误不断传递的问题，MetaGPT 将软件开发的标准操作流程写入角色提示，明确产品经理、架构师、工程师等成员的输入、职责和交付物。成员发布需求、设计和代码等结构化产物，通过共享消息池及角色订阅机制读取相关信息，再结合执行反馈检查实现。核心是用预设流程、结构化交接和中间验证减少协作歧义，而不是让所有成员自由聊天。 **主要结论：** 在协作软件开发评测中，生成方案比此前基于聊天的多智能体系统更连贯，支持用明确流程和结构化交付物减少实现中的不一致。
+  - Intro (EN): MetaGPT addresses cascading errors in naively chained agents by encoding software-development procedures into role prompts. Product managers, architects, engineers, and other roles have explicit inputs, responsibilities, and deliverables. Structured requirements, designs, and code are exchanged through a shared message pool with role-based subscriptions, while execution feedback checks implementation. Predefined procedures, structured handoffs, and intermediate verification organize collaboration and reduce ambiguity. **Findings:** Collaborative software-engineering evaluations produce more coherent solutions than prior chat-based multi-agent systems, supporting structured procedures and deliverables.
+
+  [![metagpt：原论文 Figure 2](https://arxiv.org/html/2308.00352v7/imgs/2-message_sharing.jpg)](https://arxiv.org/abs/2308.00352)
+
+- [[2024-ICLR]](https://proceedings.iclr.cc/paper_files/paper/2024/hash/25cc3adf8c85f7c70989cb8a97a691a7-Abstract-Conference.html) **ChatEval: Towards Better LLM-based Evaluators through Multi-Agent Debate** [PDF](https://arxiv.org/pdf/2308.07201v1) [🐙 Code](https://github.com/thunlp/ChatEval)
+  - 简介（中文）：ChatEval 将文本质量评估交给具有不同角色视角的多个评审智能体，让它们先讨论再给出评分或判断，以提高与人类评审的一致性。论文比较依次发言、同时发言以及同时发言后统一总结三种预设通信协议，分别改变成员能看到的信息和发言顺序影响。 **主要结论：** 两个评测任务中，与人类判断的一致性优于单评审基线；通信方式对比中，ChatGPT 设置下依次发言更有效，而相同角色提示会削弱多评审收益。
+  - Intro (EN): ChatEval uses referee agents with different role perspectives to discuss text quality before scoring or judging it. It compares predefined one-by-one, simultaneous-talk, and simultaneous-talk-with-summarizer protocols, which change information visibility and speaking-order effects. Evaluations examine agreement with human judgments. Identical role prompts weaken the gains in the tested settings, showing that useful collaboration depends on diverse perspectives as well as the communication protocol. **Findings:** On two evaluation tasks, agreement with human judgments improves over single-referee baselines. One-by-one discussion works best in the tested ChatGPT comparison, and identical role prompts weaken the gains.
+
+  [![chateval：原论文 Figure 1](https://arxiv.org/html/2308.07201v1/better_compare.png)](https://proceedings.iclr.cc/paper_files/paper/2024/hash/25cc3adf8c85f7c70989cb8a97a691a7-Abstract-Conference.html)
+
+- [[2024-ICML]](https://proceedings.mlr.press/v235/du24e.html) **Improving Factuality and Reasoning in Language Models through Multiagent Debate** [PDF](https://arxiv.org/pdf/2305.14325v1) [🐙 Code](https://github.com/composable-models/llm_multiagent_debate)
+  - 简介（中文）：让多个模型实例先独立作答，再读取其他实例的答案，通过多轮辩论修正自己的判断。这里的智能体可以共享同一个底座模型，但分别维护对话上下文。论文展示了多智能体交流的基本流程，并研究智能体数量、辩论轮数和提示方式对结果的影响。 **主要结论：** 在所测数学推理、策略推理和事实生成任务中，多轮辩论提高了推理与事实正确性；这证明了该实验设置中的收益，尚不能单独分离“多个样本”与“相互交流”各自的贡献。
+  - Intro (EN): Multiple model instances first answer independently, then revise their responses after reading other agents’ solutions over several debate rounds. Agents can share a backbone while maintaining separate conversation contexts. The study examines reasoning and factuality, including the effects of agent count, debate rounds, and prompting choices. **Findings:** Debate improves mathematical and strategic reasoning and factual validity in the evaluated settings; these results alone do not isolate the gains from multiple samples versus peer interaction.
+
+  [![debate：原论文 Figure 2](https://arxiv.org/html/2305.14325v1/fig2-2.svg)](https://proceedings.mlr.press/v235/du24e.html)
+
+- [[2024-ACL]](https://aclanthology.org/2024.acl-long.810/) **ChatDev: Communicative Agents for Software Development** [PDF](https://arxiv.org/pdf/2307.07924v5) [🐙 Code](https://github.com/OpenBMB/ChatDev)
+  - 简介（中文）：用 chat chain 把软件开发拆成设计、编码和测试等顺序阶段，每个子任务由具有不同职责的两个智能体进行多轮对话。中间结果沿工作链传递，澄清式交流减少需求理解偏差。它展示了链式工作流如何组合多个局部对话，而一个节点的工作可以包含多次模型请求。 **主要结论：** 实验分析发现，自然语言交流更适合系统设计，代码语言交流更有助于调试；因此协作效果不仅取决于谁连接谁，也取决于各阶段交换什么内容。
+  - Intro (EN): ChatDev decomposes software development into sequential phases and subtasks linked by a chat chain. Pairs of specialized agents conduct multi-turn conversations within each subtask and pass artifacts downstream. Its clarification protocol helps reduce misunderstandings, while the workflow demonstrates how local dialogues fit into a predefined collaboration structure. **Findings:** The analysis finds natural-language exchange useful for design and programming-language exchange useful for debugging, highlighting the importance of stage-appropriate communication content.
+
+  [![chatdev：原论文 Figure 2](https://arxiv.org/html/2307.07924v5/chat_chain.png)](https://aclanthology.org/2024.acl-long.810/)
+
+- [[2024-Findings of EMNLP]](https://aclanthology.org/2024.findings-emnlp.427/) **Improving Multi-Agent Debate with Sparse Communication Topology** [PDF](https://arxiv.org/pdf/2406.11776v1)
+  - 简介（中文）：比较不同密度的预设通信图：智能体只读取相邻节点上一轮的回答，再更新自己的答案。主实验采用 6 个智能体，研究减少连接是否仍能保留辩论收益。 **主要结论：** GPT 与 Mistral 上的实验均表明，稀疏通信可以在减少计算成本时保持或超过全连接辩论的表现；全员互相读取并非取得辩论收益的必要条件。
+  - Intro (EN): This study varies the density of predefined debate graphs, so agents revise their answers using only connected peers’ previous responses. The main setup uses six agents. Experiments show that sparse communication can preserve or improve performance while reducing communication cost, providing a direct comparison against fully connected debate. **Findings:** Experiments with GPT and Mistral show sparse communication can match or outperform fully connected debate at lower cost; all-to-all exchange is not required in these settings.
+
+  [![sparse：原论文 Figure 2](https://arxiv.org/html/2406.11776v1/imgs/sparsity_graphs.png)](https://aclanthology.org/2024.findings-emnlp.427/)
+
+- [[2025-ICLR]](https://arxiv.org/abs/2406.07155) **Scaling Large Language Model-based Multi-Agent Collaboration** [PDF](https://arxiv.org/pdf/2404.07738) [🐙 Code](https://github.com/OpenBMB/ChatDev/tree/macnet)
+  - 简介（中文）：MacNet 用有向无环图组织协作，按拓扑顺序执行推理，并通过节点与边上的功能角色实现局部交互。论文系统比较网络形态、连接密度和规模，将实验扩展到超过千个逻辑智能体。关注点是结构和规模如何共同影响协作收益，以及继续增加智能体何时出现收益递减。 **主要结论：** 在所测网络中，不规则拓扑优于规则拓扑；随智能体数量增加，表现呈现先增长、后趋于饱和的逻辑斯蒂曲线，而不是无限线性提升。
+  - Intro (EN): MacNet organizes collaboration through directed acyclic graphs, executing reasoning in topological order with functional roles assigned to nodes and edges. It studies network shape, connectivity, and scale, including configurations exceeding one thousand logical agents. The experiments investigate structural effects and diminishing returns from increasing collaboration scale. **Findings:** Irregular topologies outperform regular ones in the evaluated networks, and performance follows a logistic growth pattern with increasing agent count, eventually approaching saturation.
+
+  [![macnet：原论文 Figure 1](https://arxiv.org/html/2406.07155v3/network.png)](https://arxiv.org/abs/2406.07155)
+
+- [[2025-ICLR]](https://proceedings.iclr.cc/paper_files/paper/2025/hash/5434be94e82c54327bb9dcaf7fca52b6-Abstract-Conference.html) **Mixture-of-Agents Enhances Large Language Model Capabilities** [PDF](https://arxiv.org/pdf/2406.04692v1) [🐙 Code](https://github.com/togethercomputer/moa)
+  - 简介（中文）：MoA 利用“模型能从其他模型的候选回答中提炼出更好答案”的现象，搭建预设的多层协作结构：第一层并行生成回答，后续层读取上一层的多个回答，辨别其中的有用信息并重新综合，最终由聚合模型输出答案。不同节点可以使用不同模型，也可以共享模型；方法通过推理时的提议与聚合提升回答质量，不需要训练底座参数或为每道题重新学习连接。 **主要结论：** 在 AlpacaEval 2.0、MT-Bench 和 FLASK 的论文评测中，分层聚合取得较强表现，其中开放模型组成的系统在 AlpacaEval 2.0 上超过 GPT-4o 基线，表明推理时组合可超过单模型。
+  - Intro (EN): MoA exploits models’ ability to improve their responses using other models’ proposals. A predefined layered structure generates parallel answers, passes them to the next layer, and repeatedly synthesizes useful information before a final aggregation. Agents may use different models or share a backbone. The method improves generation through inference-time proposing and aggregation, without training backbone parameters or learning a new communication graph for each query. **Findings:** The paper reports strong results on AlpacaEval 2.0, MT-Bench, and FLASK; its open-model ensemble exceeds the GPT-4o baseline on AlpacaEval 2.0, demonstrating gains from inference-time composition.
+
+  [![moa：原论文 Figure 2](https://arxiv.org/html/2406.04692v1/mom.svg)](https://proceedings.iclr.cc/paper_files/paper/2025/hash/5434be94e82c54327bb9dcaf7fca52b6-Abstract-Conference.html)
+
+- [[2025-ACL]](https://aclanthology.org/2025.acl-long.421/) **MultiAgentBench: Evaluating the Collaboration and Competition of LLM agents** [PDF](https://arxiv.org/pdf/2503.01935v1) [🐙 Code](https://github.com/ulab-uiuc/MARBLE)
+  - 简介（中文）：针对单智能体基准难以衡量协作过程的问题，MultiAgentBench 在多个交互场景中同时评估任务完成与协作、竞争质量，配套 MARBLE 框架，用里程碑指标记录中间进展。论文对照星形、链形、树形和图式通信，以及群体讨论、认知规划等策略；这里的结构是实验中配置的协调协议，并非学习得到的通信图。 **主要结论：** 在研究任务场景的拓扑对比中，图式协议整体表现较好，树形协议成本高、表现较弱；认知规划改善协作，而额外群体讨论并未自动带来收益。这些结构排名有具体场景范围，不能推广为所有任务的最优拓扑。
+  - Intro (EN): MultiAgentBench evaluates task completion and collaboration or competition in interactive scenarios, using milestone-based metrics and the MARBLE framework. It compares configured star, chain, tree, and graph coordination protocols alongside discussion and cognitive-planning strategies. These are experimental protocol choices rather than learned graphs. **Findings:** In the research scenario, graph coordination performs well overall, whereas tree coordination consumes more tokens and performs poorly. Cognitive planning improves coordination, while additional group discussion does not automatically help. These topology rankings are scenario-specific.
+
+  [![multibench：原论文 Figure 3](https://arxiv.org/html/2503.01935v1/coordination.svg)](https://aclanthology.org/2025.acl-long.421/)
+
+- [[2025-NeurIPS]](https://proceedings.neurips.cc/paper_files/paper/2025/hash/934252acd87f254d5d4672fbde283bd2-Abstract-Conference.html) **Debate or Vote: Which Yields Better Decisions in Multi-Agent Large Language Models?** [PDF](https://arxiv.org/pdf/2508.17536v2) [🐙 Code](https://github.com/deeplearning-wisc/debate-or-vote)
+  - 简介（中文）：把多智能体辩论拆成两个因素：多个独立答案的多数投票，以及交流后修改答案。论文在七个 NLP 基准上对照这两者，发现所测设置中的主要收益往往来自投票，额外辩论收益有限；并在给定假设下，用鞅模型解释无方向性的相互影响为何未必提高平均正确率。进一步通过偏向正确信息的干预研究有效交流条件，为拓扑实验提供“独立作答加投票”的必要基线。 **主要结论：** 七个基准上的主要收益多来自多数投票；只有让更新更倾向纠正错误的针对性干预，才明显改善辩论效果。因此需要先与独立投票比较，再判断通信是否有额外价值。
+  - Intro (EN): This study separates majority voting over independent answers from revisions induced by debate. Across seven NLP benchmarks, voting accounts for much of the improvement in the evaluated settings. Under stated assumptions, a martingale model explains why undirected peer influence need not increase mean accuracy. Interventions that favor correct information probe when communication becomes useful. Independent answering with voting therefore serves as an essential baseline for topology experiments. **Findings:** Across seven benchmarks, majority voting explains most gains, while correction-biased interventions improve debate. Independent voting is therefore necessary to assess communication’s added value.
+
+  [![vote：原论文 Figure 1](https://arxiv.org/html/2508.17536v2/introfig1.png)](https://proceedings.neurips.cc/paper_files/paper/2025/hash/934252acd87f254d5d4672fbde283bd2-Abstract-Conference.html)
+
+- [[2025-arXiv]](https://arxiv.org/abs/2512.08296) **Towards a Science of Scaling Agent Systems** [PDF](https://arxiv.org/pdf/2512.08296) [🐙 Code](https://github.com/ybkim95/agent-scaling)
+  - 简介（中文）：这项实证研究考察增加协作是否一定提高能力：所读 v3 版本在六个智能体基准、三个模型家族和 260 种配置上，对照单智能体、独立多智能体、中心式、去中心式与混合式架构，并控制工具、提示和计算设置。作者用任务及系统特征拟合表现预测模型，而非提出一个新的通用最优通信图。 **主要结论：** 协作收益强烈依赖任务与架构的匹配：相对单智能体的表现变化，从可分解金融推理中的 +80.8% 到顺序规划中的 −70.0%。强单智能体的协作收益容易饱和，工具密集任务可能被协调开销拖累；无中心验证的结构也更容易传播错误。
+  - Intro (EN): This empirical study asks when coordination improves agent performance. The v3 evaluation covers 260 configurations, six benchmarks, three model families, and single-agent, independent, centralized, decentralized, and hybrid architectures with standardized tools, prompts, and compute. It fits a predictive model rather than proposing a universally optimal graph. **Findings:** Relative changes against single-agent baselines range from +80.8% on decomposable financial reasoning to −70.0% on sequential planning. Benefits saturate as single-agent capability increases; tool-heavy tasks can suffer coordination overhead, and architectures lacking centralized verification tend to propagate more errors.
+
+  [![scaling：原论文 Figure 2](https://arxiv.org/html/2512.08296v3/boxplots_v4.png)](https://arxiv.org/abs/2512.08296)
+
+- [[2026-arXiv]](https://arxiv.org/abs/2603.28990) **Drop the Hierarchy and Roles: How Self-Organizing LLM Agents Outperform Designed Structures** [PDF](https://arxiv.org/pdf/2603.28990)
+  - 简介（中文）：论文通过跨八种模型、八种协调协议及 4–256 个成员的计算实验，比较预设层级、固定角色与自主组织的效果。重点是把执行顺序和角色选择拆开考察：其 Sequential 协议固定发言顺序，但允许成员自主选择角色，并不等于完全自由、无约束的交流。 **主要结论：** 在作者的任务集与质量评估设置中，这种混合协议优于中心式协调和完全自主协议；但较弱模型上出现反转，预设结构更有效。支持的结论是自主程度需要与模型能力和协议匹配，而非取消所有结构就会更强。
+  - Intro (EN): This computational study compares eight coordination protocols across eight models and teams of 4–256 agents. It separates ordering from role selection: the Sequential protocol fixes participation order while allowing agents to choose their roles, rather than removing all communication constraints. **Findings:** Under the paper’s task set and quality evaluation, this hybrid protocol outperforms centralized and fully autonomous alternatives. With weaker models, the trend reverses and rigid structures perform better. The evidence supports matching autonomy to model capability and protocol design, not universally eliminating structure.
+
+  [![selforg：原论文 Figure 1](https://arxiv.org/html/2603.28990v1/figures/fig5_protocols.png)](https://arxiv.org/abs/2603.28990)
+
+- [[2026-ICML]](https://arxiv.org/abs/2604.23459) **Architecture Matters for Multi-Agent Security** [PDF](https://arxiv.org/pdf/2604.23459) [🐙 Code](https://github.com/benhagag10/Architecture-Matters-for-Multi-Agent-Security)
+  - 简介（中文）：研究同一个底座模型仅改变协作架构后，安全行为会怎样变化。在浏览器、桌面操作和代码环境中，作者比较角色拆分、星形／链式／网状协作以及不同记忆可见性，并分别测量拒绝、拦截、有害执行进展与正常任务表现。 **主要结论：** 多数受测多智能体配置比单智能体更易受攻击；正常任务准确率相当或更高时，攻击成功率仍可相差最高 3.8 倍，没有一种设计在所有环境中都更安全。
+  - Intro (EN): Holding the base model fixed, this study varies role decomposition, star/chain/mesh coordination, and memory visibility across browser, desktop, and coding environments. It distinguishes refusal, interception, harmful execution progress, and benign-task utility. Decomposition can obscure the overall intent from individual agents, and architectural effects vary across environments. The results show why system security cannot be inferred solely from a backbone’s safety or a topology’s name. **Findings:** Most evaluated multi-agent configurations are more vulnerable than standalone agents; attack success varies by up to 3.8× at comparable or higher benign accuracy, with no universally safer design.
+
+  [![archsec：原论文 Figure 1](assets/architecture-security.png)](https://arxiv.org/abs/2604.23459)
+
 ## II. 提前优化、之后复用 · 拓扑优化
 
-### II1. GPTSwarm: Language Agents as Optimizable Graphs
+- [[2024-ICML]](https://proceedings.mlr.press/v235/zhuge24a.html) **GPTSwarm: Language Agents as Optimizable Graphs** [PDF](https://arxiv.org/pdf/2402.16823v3) [🐙 Code](https://github.com/metauto-ai/GPTSwarm)
+  - 简介（中文）：GPTSwarm 把模型调用、工具使用等操作表示为节点，把操作间的信息传递表示为边，一个完整智能体可由多个节点构成子图。在多个智能体的组合图上，先采样候选跨智能体连接、运行任务，再用 REINFORCE 根据任务成绩更新边概率；节点提示词则利用执行记录与反馈改写。它同时优化“节点怎样做”和“结果传给谁”，学得的图或连接分布可用于后续任务。 **主要结论：** 实验显示连接优化能够改善组合智能体，节点提示词优化还能带来额外收益；Mini Crosswords 的顺序优化实验说明，通信结构与节点行为是两个都需要考虑的因素。
+  - Intro (EN): GPTSwarm represents model calls and tool operations as nodes and information flow as edges; a complete agent can be a multi-node subgraph. Candidate inter-agent connections are sampled, executed, and optimized through REINFORCE using task scores. Separately, node prompts are revised using execution records and feedback. This optimizes both operation behavior and communication, with learned graphs or connection distributions available for subsequent tasks. **Findings:** Experiments improve composed agents through edge optimization, with further gains from node-prompt optimization on Mini Crosswords, showing that both connectivity and operation behavior matter.
 
-- **作者 / 年份 / 发表**：Mingchen Zhuge 等；ICML 2024。
-- **入口**：[正式论文](https://proceedings.mlr.press/v235/zhuge24a.html) · [作者代码](https://github.com/metauto-ai/GPTSwarm)。
-- **方法**：把操作组织为计算图，并优化节点提示词及跨智能体连接。
-- **阅读重点**：一个 agent 可以是一个子图；图节点不总等于一个完整智能体。
-- **边界**：节点优化与边优化同时变化时，需要消融才能归因给拓扑。
-- **建议**：必读，用来建立“图可以被优化”的概念。
+  [![gptswarm：原论文 Figure 1](https://arxiv.org/html/2402.16823v3/gptswarm_first.png)](https://proceedings.mlr.press/v235/zhuge24a.html)
 
-### II2. Cut the Crap: An Economical Communication Pipeline for LLM-based Multi-Agent Systems — AgentPrune
+- [[2025-arXiv]](https://arxiv.org/abs/2502.07373) **EvoFlow: Evolving Diverse Agentic Workflows On The Fly** [PDF](https://arxiv.org/pdf/2502.07373)
+  - 简介（中文）：EvoFlow 将目标从寻找一个通用工作流改为优化一群成本与能力各异的工作流。演化阶段按查询标签检索父代，组合其流程，并对模型、提示或操作模块做变异；再依据效果与成本在相近候选中进行选择，保留多样性。推理阶段从已优化群体中检索适合当前题目领域和复杂度的工作流。 **主要结论：** 在数学、代码和 ALFWorld 等评测中，多样化工作流改善了效果与成本的折中；异构模型实验显示较弱开放模型的组合也能超过所比较的更强单模型。这里的关键是优化可复用的候选群体并按题检索，不是测试时逐题重新完成演化搜索。
+  - Intro (EN): EvoFlow optimizes a diverse population of workflows with different capabilities and costs. Evolution retrieves tagged parents, combines their workflows, and mutates models, prompts, or operators. Niching-based selection balances performance, cost, and diversity. At inference, it retrieves domain- and complexity-appropriate workflows from the optimized population. **Findings:** Mathematics, coding, and ALFWorld evaluations show improved performance–cost trade-offs; heterogeneous experiments demonstrate that combinations of weaker open models can exceed the compared stronger single model. The reusable population and query-based retrieval should be distinguished from rerunning evolutionary search for every test query.
 
-- **作者 / 年份 / 发表**：Guibin Zhang 等；2024 首发，ICLR 2025。
-- **入口**：[正式论文](https://proceedings.iclr.cc/paper_files/paper/2025/hash/bbc461518c59a2a8d64e70e2c38c4a0e-Abstract-Conference.html) · [全文](https://arxiv.org/html/2410.02506) · [作者代码](https://github.com/yanweiyue/AgentPrune)。
-- **方法**：识别时空通信冗余，学习连接重要性后进行一次剪枝。
-- **阅读重点**：同轮内信息流与跨轮消息流有何区别；剪枝优化成本如何摊销。
-- **边界**：效率比较需同时说明优化阶段和最终推理阶段的开销。
-- **建议**：必读；第二个可尝试的原方法复现。
+  [![evoflow：原论文 Figure 3](https://arxiv.org/html/2502.07373v1/framework-2.png)](https://arxiv.org/abs/2502.07373)
 
-<a id="conditioned"></a>
+- [[2025-ICLR]](https://proceedings.iclr.cc/paper_files/paper/2025/hash/bbc461518c59a2a8d64e70e2c38c4a0e-Abstract-Conference.html) **Cut the Crap: An Economical Communication Pipeline for LLM-based Multi-Agent Systems** [PDF](https://arxiv.org/pdf/2410.02506v1) [🐙 Code](https://github.com/yanweiyue/AgentPrune)
+  - 简介（中文）：AgentPrune 将协作表示为包含同轮空间边与跨轮时间边的图，为已有连接学习连续掩码，用任务效用和低秩约束识别应保留的消息通路，再一次性剪除低贡献连接，固定精简图继续执行。多查询设置会复用前期学到的结构，从而摊薄优化成本。 **主要结论：** 在所测框架中节省约 28.1%–72.8% 的 token，同时保持有竞争力的任务表现；攻击实验也显示剪除问题通路有助于缓解恶意信息传播。
+  - Intro (EN): AgentPrune models within-round spatial edges and across-round temporal edges, learning continuous masks over existing communication links. Task utility and a low-rank constraint guide mask training, followed by one-shot removal of low-contribution connections and execution with the fixed pruned graph. Its multi-query setting reuses the structure to amortize optimization cost. Reported token savings of approximately 28.1%–72.8% apply to the evaluated frameworks, rather than constituting a universal guarantee. **Findings:** Across the evaluated frameworks, token use falls by approximately 28.1%–72.8% while task performance remains competitive; attack experiments also support pruning problematic information pathways.
+
+  [![agentprune：原论文 Figure 4](https://arxiv.org/html/2410.02506v1/framework.png)](https://proceedings.iclr.cc/paper_files/paper/2025/hash/bbc461518c59a2a8d64e70e2c38c4a0e-Abstract-Conference.html)
+
+- [[2025-ICLR]](https://proceedings.iclr.cc/paper_files/paper/2025/hash/36b7acf6f6010652b3f2a433774a66fe-Abstract-Conference.html) **Automated Design of Agentic Systems** [PDF](https://arxiv.org/pdf/2408.08435v2) [🐙 Code](https://github.com/ShengranHu/ADAS)
+  - 简介（中文）：ADAS 将智能体设计扩展为程序搜索：元智能体读取已有方案及其评测成绩，编写新的智能体程序，经自我检查和修复后在任务上执行评测，再把结果加入档案，供下一轮设计参考。搜索对象包含提示词、模型调用、信息交换和控制流程，最终选出的程序可用于新样本。它与通信拓扑搜索相邻，但优化单位是完整的智能体系统程序，不能把程序中的每个操作都等同为独立智能体。 **主要结论：** 在代码、科学和数学等任务中，搜索得到的设计超过所比较的人工设计方案，并在论文测试的跨领域、跨底座模型迁移中保持优势。
+  - Intro (EN): ADAS frames agentic-system design as program search. A meta-agent examines an archive of designs and scores, writes new agent code, reflects on and repairs it, evaluates it on tasks, and adds the results back to the archive. Selected programs are reused on new examples. Its search space includes prompts, model calls, information exchange, and control flow; the optimized object is a complete program, whose operations are not necessarily separate agents. **Findings:** Discovered designs outperform the compared hand-designed agents across coding, science, and mathematics, with advantages retained in the tested domain and backbone transfers.
+
+  [![adas：原论文 Figure 1](https://arxiv.org/html/2408.08435v2/algo.png)](https://proceedings.iclr.cc/paper_files/paper/2025/hash/36b7acf6f6010652b3f2a433774a66fe-Abstract-Conference.html)
+
+- [[2025-ICLR]](https://proceedings.iclr.cc/paper_files/paper/2025/hash/5492ecbce4439401798dcd2c90be94cd-Abstract-Conference.html) **AFlow: Automating Agentic Workflow Generation** [PDF](https://arxiv.org/pdf/2410.10762v4) [🐙 Code](https://github.com/FoundationAgents/AFlow)
+  - 简介（中文）：AFlow 用代码表示工作流，把模型调用作为节点，把集合投票、修订等常见模式作为操作模块，用程序控制信息流。搜索时通过蒙特卡洛树搜索的变体选择候选工作流，让 LLM 修改其结构或提示词，在验证题上执行，再将成绩与修改经验回传用于后续搜索。得到的工作流随后复用。这里的搜索树记录候选方案的演化，和最终执行时智能体之间的通信图是两个不同对象。 **主要结论：** 六个基准上优于所比较的自动工作流方法；部分任务中，较小模型配合搜索出的流程能以较低推理费用超过 GPT-4o，说明流程质量可部分弥补底座能力差距。
+  - Intro (EN): AFlow represents workflows as code, combining LLM-call nodes with reusable operators such as ensembling and revision. A Monte Carlo tree search variant selects candidate workflows, an LLM modifies their structure or prompts, and validation execution provides scores and experience for subsequent search. The selected workflow is reused afterward. The search tree tracks candidate-design evolution and should be distinguished from the information-flow graph executed by the resulting system. **Findings:** Across six benchmarks, searched workflows outperform the compared automated approaches; on specific tasks, smaller models exceed GPT-4o at lower inference cost when paired with optimized workflows.
+
+  [![aflow：原论文 Figure 3](https://arxiv.org/html/2410.10762v4/MCTS.png)](https://proceedings.iclr.cc/paper_files/paper/2025/hash/5492ecbce4439401798dcd2c90be94cd-Abstract-Conference.html)
+
+- [[2025-ACL]](https://aclanthology.org/2025.acl-long.1170/) **AgentDropout: Dynamic Agent Elimination for Token-Efficient and High-Performance LLM-Based Multi-Agent Collaboration** [PDF](https://arxiv.org/pdf/2503.18891v1) [🐙 Code](https://github.com/wangzx1219/AgentDropout)
+  - 简介（中文）：把各轮通信展开为图，先学习删除低贡献节点，再进一步学习删除冗余连接，使不同轮次由不同成员参与。主要实验先在训练题上优化邻接矩阵，再用于测试推理，因此本清单将其归入提前优化。它把优化对象从“谁和谁说话”扩展到“这一轮谁还需要参与”。 **主要结论：** 相对论文所比较的先进方法，平均 prompt token 减少 21.6%、completion token 减少 18.4%，同时任务表现有所提升；去掉冗余成员不必以准确率下降为代价。
+  - Intro (EN): AgentDropout first removes low-contribution nodes and then redundant edges in a graph spanning communication rounds. Different rounds can retain different participants. Its main experiments optimize adjacency matrices on training questions before test-time use, extending topology optimization from selecting communication links to selecting which agents participate in each round. **Findings:** Against the compared state-of-the-art methods, average prompt tokens fall by 21.6% and completion tokens by 18.4%, alongside improved task performance.
+
+  [![agentdropout：原论文 Figure 2](https://arxiv.org/html/2503.18891v1/main_fig.png)](https://aclanthology.org/2025.acl-long.1170/)
+
+- [[2025-EMNLP]](https://aclanthology.org/2025.emnlp-main.93/) **SwarmAgentic: Towards Fully Automated Agentic System Generation via Swarm Intelligence** [PDF](https://arxiv.org/pdf/2506.15672v1) [🐙 Code](https://github.com/YaoZ720/SwarmAgenticCode)
+  - 简介（中文）：SwarmAgentic 把完整智能体系统作为搜索个体，联合改进成员职责与协作流程。它借鉴粒子群优化，维护多个候选系统；运行任务后用 LLM 分析缺失或冗余成员、步骤及上下文等失败原因，再结合个体历史最优和群体最优生成文本修改方案，最终返回搜索出的最佳系统。粒子是候选系统，不是同一任务中互相聊天的成员。 **主要结论：** 在规划、创作及数学等六项任务中优于论文所列基线；TravelPlanner 上相对 ADAS 的提升为 261.8%，这是该基准指标的相对增幅，不是准确率增加 261.8 个百分点。消融支持失败修正、成员功能调整与协作流程重构的作用。
+  - Intro (EN): SwarmAgentic treats whole agentic systems as search particles and jointly refines agent functionality and collaboration. An LLM diagnoses execution failures, then generates textual updates guided by failed modifications, personal best systems, and the global best, inspired by particle swarm optimization. Search returns the best discovered system; particles are candidate systems, not chatting members of one team. **Findings:** It outperforms the listed baselines across six planning, writing, and reasoning tasks. The reported 261.8% improvement over ADAS on TravelPlanner is a relative metric gain, not a percentage-point increase. Ablations support failure-driven correction, agent adaptation, and collaboration restructuring.
+
+  [![swarmagentic：原论文 Figure 1](https://arxiv.org/html/2506.15672v1/main2.png)](https://aclanthology.org/2025.emnlp-main.93/)
+
+- [[2025-NeurIPS]](https://proceedings.neurips.cc/paper_files/paper/2025/hash/dc2ccde7ee43e5719e08c68e848bd65a-Abstract-Conference.html) **AgentBreeder: Mitigating the AI Safety Risks of Multi-Agent Scaffolds via Self-Improvement** [PDF](https://arxiv.org/pdf/2502.00757v4) [🐙 Code](https://github.com/jrosseruk/AgentBreeder)
+  - 简介（中文）：把多智能体 scaffold，即角色、提示词和协作程序，作为可进化个体。LLM 对已有方案做变异和交叉，候选方案经能力与安全评测后，通过语义聚类和帕累托筛选保留不同类型的优良设计，再进入下一代。BlueAgentBreeder 同时优化能力与安全，RedAgentBreeder 则用相反的安全目标探查风险。它说明离线搜索不应只看任务分数，也应检查协作编排是否改变安全表现。 **主要结论：** 蓝方搜索能在保持或提高能力的同时改善安全指标；红方搜索则能在能力提升时产生更脆弱的协作方案，说明任务分数提高并不意味着系统更安全。
+  - Intro (EN): AgentBreeder evolves multi-agent scaffolds containing roles, prompts, and collaboration code. LLM-driven mutation and crossover generate candidates; capability and safety evaluation, semantic clustering, and Pareto selection preserve diverse designs for the next generation. BlueAgentBreeder jointly optimizes capability and safety, while RedAgentBreeder probes risks using an opposing safety objective. The method searches reusable scaffolds and examines how orchestration changes safety as well as task performance. **Findings:** Blue-mode search improves safety while maintaining or increasing capability; red-mode search can improve capability while discovering weaker safety, showing that task gains do not imply safer systems.
+
+  [![breeder：原论文 Figure 1](https://arxiv.org/html/2502.00757v4/AgentBreederDiagramJPG.jpg)](https://proceedings.neurips.cc/paper_files/paper/2025/hash/dc2ccde7ee43e5719e08c68e848bd65a-Abstract-Conference.html)
+
+- [[2026-AAAI]](https://ojs.aaai.org/index.php/AAAI/article/view/40824) **ResMAS: Resilience Optimization in LLM-based Multi-agent Systems** [PDF](https://arxiv.org/pdf/2601.04694v1) [🐙 Code](https://github.com/tsinghua-fib-lab/ResMAS)
+  - 简介（中文）：ResMAS 将目标从正常条件下的准确率扩展为不同扰动强度下的系统韧性。先训练图奖励模型预测候选结构在成员出错时的表现，再用监督微调和 GRPO 训练拓扑生成器，使其在任务描述及节点、边数量约束下生成更稳健的图；随后固定拓扑，利用相邻成员交互来优化各角色提示词。实验按任务与规模配置优化后复用，重点是部署前增强抗扰动能力，而不是出错后才隔离节点。 **主要结论：** 在不同节点数、连接数和扰动条件下提高了系统韧性，并在新任务与新模型上展现迁移收益；拓扑和提示词都会影响成员出错后的整体表现。
+  - Intro (EN): ResMAS optimizes resilience across perturbation levels rather than accuracy only in normal conditions. A graph reward model predicts performance under agent errors; supervised fine-tuning and GRPO train a topology generator conditioned on task descriptions and node/edge constraints. The topology is then fixed while neighbor interactions guide role-prompt optimization. The evaluated configurations are optimized for reuse, aiming to build perturbation resistance before deployment rather than reactively isolate faulty agents. **Findings:** Resilience improves across tested node/edge constraints and perturbations, with transfer to new tasks and models; both topology and prompts affect performance under agent errors.
+
+  [![resmas：原论文 Figure 3](https://arxiv.org/html/2601.04694v1/topo_optim.png)](https://ojs.aaai.org/index.php/AAAI/article/view/40824)
+
+- [[2026-AAAI]](https://ojs.aaai.org/index.php/AAAI/article/view/40231) **MPAS: Breaking Sequential Constraints of Multi-Agent Communication Topologies via Individual-Epistemic Message Propagation** [PDF](https://ojs.aaai.org/index.php/AAAI/article/download/40231/44192) [🐙 Code](https://github.com/rkxuan/MPAS)
+  - 简介（中文）：MPAS 针对有向无环图按拓扑顺序执行带来的串行等待，把每轮协作拆成消息生成、邻居消息聚合、自身回答更新三个阶段，同一阶段内各节点可并行，因此能保留有环连接。再以任务奖励优化各条边的存在概率，训练后得到可复用结构；角色引导的选择与注意聚合还可过滤无关消息。其核心是改变消息传播协议，使优化出的有效连接不必为了满足无环约束而被删除。 **主要结论：** 在多数受测配置中优于顺序执行设计；AQuA 上报告的平均每轮通信时间由 84.6 秒降到 14.2 秒，说明传播协议和并行方式也是效率的重要来源。
+  - Intro (EN): MPAS replaces sequential topological execution with three stages per round: message generation, neighbor-message aggregation, and response update, with nodes parallelized within each stage. This allows cyclic connections. Task rewards optimize edge probabilities before the resulting topology is reused; role-guided selective and attention aggregators can additionally filter irrelevant messages. The central idea is a propagation protocol that retains useful learned connections instead of discarding them merely to enforce acyclicity. **Findings:** MPAS outperforms sequential designs in most evaluated configurations; reported mean communication time on AQuA falls from 84.6 to 14.2 seconds per round, highlighting protocol-level parallelism.
+
+  [![mpas：原论文 Figure 1](assets/mpas-framework.png)](https://ojs.aaai.org/index.php/AAAI/article/view/40231)
+
+- [[2026-ICLR]](https://arxiv.org/abs/2502.02533) **Multi-Agent Design: Optimizing Agents with Better Prompts and Topologies** [PDF](https://arxiv.org/pdf/2502.02533)
+  - 简介（中文）：MASS 将系统设计拆成三个相互衔接的阶段：先优化局部功能模块的提示词，再搜索工作流拓扑，最后在选定结构上优化全局提示词。搜索空间包含聚合、反思、辩论、总结和工具使用等模块。它说明连接结构的效果依赖节点的具体行为，提示词与拓扑应配合优化。 **主要结论：** 实验与设计空间分析均显示，提示词和拓扑都会显著影响最终效果；交替优化得到的系统优于所比较方案，支持先改进模块，再优化组合及全局提示的设计顺序。
+  - Intro (EN): MASS interleaves three stages: optimizing prompts within local blocks, searching workflow topologies, and refining workflow-level prompts. Its configurable space includes aggregation, reflection, debate, summarization, and tool use. The method highlights the interaction between node behavior and graph structure when searching for reusable multi-agent designs. **Findings:** Experiments and design-space analysis show that both prompts and topology affect performance; interleaved optimization produces systems that outperform the evaluated alternatives.
+
+  [![mass：原论文 Figure 3](https://arxiv.org/html/2502.02533v2/4-mass.png)](https://arxiv.org/abs/2502.02533)
+
 ## III. 根据当前题目生成 · 任务自适应拓扑
 
-### III1. Input Conditioned Graph Generation for Language Agents
+- [[2024-arXiv]](https://arxiv.org/abs/2406.11555) **Input Conditioned Graph Generation for Language Agents** [PDF](https://arxiv.org/pdf/2406.11555) [🐙 Code](https://github.com/lukasVierling/DynamicGPTSwarm)
+  - 简介（中文）：DynamicGPTSwarm 将 GPTSwarm 的共享边概率改为输入相关的边概率：连接生成模型读取当前题目，预测候选连接的概率，采样得到协作图并执行任务，再用任务奖励训练生成器。这样，语言或专业能力不同的成员可按题目被连接，也能学习避开不可靠成员。关键变化是学习“输入到图的映射”，而不只是为一批任务找到一张共同使用的图。 **主要结论：** 在 MMLU 与 CMMLU 混合输入实验中优于静态图，加入促进稀疏性的目标后优势进一步扩大，支持在输入差异明显时学习按题路由。
+  - Intro (EN): DynamicGPTSwarm replaces shared edge probabilities with input-conditioned probabilities. A graph generator reads the query, predicts candidate-edge probabilities, samples a collaboration graph, and learns from the resulting task reward. Experiments examine language specialization, expertise, and unreliable participants. The essential change is learning a mapping from inputs to graphs, so routing can vary with the question instead of using a single optimized topology for every task. **Findings:** Input-conditioned graphs outperform the static approach on mixed MMLU/CMMLU inputs, with larger gains when sparsity is encouraged, supporting routing adapted to heterogeneous queries.
 
-- **作者 / 年份 / 状态**：Lukas Vierling、Jie Fu、Kai Chen；2024，按 arXiv 预印本收录，未确认正式会议信息。
-- **入口**：[论文](https://arxiv.org/abs/2406.11555) · [作者代码](https://github.com/lukasVierling/DynamicGPTSwarm)。
-- **方法**：基于图表示，通过强化学习微调一个生成连接的 LLM，使信息流依赖输入。
-- **阅读重点**：和 G-Designer 比较“用 LLM 生成图”与“用图模型生成图”。
-- **边界**：按输入变化不自动等于执行中逐轮重建网络。
+  [![input：原论文 Figure 4](https://arxiv.org/html/2406.11555v1/crosswords_graph.png)](https://arxiv.org/abs/2406.11555)
 
-### III2. G-Designer: Architecting Multi-agent Communication Topologies via Graph Neural Networks
+- [[2025-ICML]](https://proceedings.mlr.press/v267/zhang25cu.html) **G-Designer: Architecting Multi-agent Communication Topologies via Graph Neural Networks** [PDF](https://arxiv.org/pdf/2410.11782v3) [🐙 Code](https://github.com/yanweiyue/GDesigner)
+  - 简介（中文）：G-Designer 先将智能体的底座模型、角色和工具描述编码为节点特征，并把当前题目作为虚拟节点加入锚定图。图卷积编码器产生潜在表示，解码器先预测连接概率，再通过锚定约束和稀疏化得到精简通信图；运行该图后的任务效用通过策略梯度训练设计器。测试时为新题生成图，再由成员按图协作。训练对象是拓扑设计器，任务虚拟节点仅提供条件信息，不是额外的执行智能体。 **主要结论：** 六个基准中取得较好的效果与成本权衡；消融中移除任务虚拟节点导致最明显的性能下降，说明题目信息是适应性设计的重要因素，而不只是额外加入一个图网络。
+  - Intro (EN): G-Designer encodes agent backbones, roles, and tools, adding a query virtual node to an anchor graph. A graph-convolutional variational encoder produces latent representations; decoding predicts connectivity, then anchor regularization and sparsification refine the communication graph. Task utility from executing sampled graphs trains the designer through policy gradients. At test time it generates a graph for each new query. The virtual task node provides conditioning and is not an additional executing agent. **Findings:** Across six benchmarks, the method improves performance–cost trade-offs; removing the task virtual node causes the largest reported ablation drop, highlighting the importance of query conditioning.
 
-- **作者 / 年份 / 发表**：Guibin Zhang 等；2024 首发，ICML 2025。
-- **入口**：[正式论文](https://proceedings.mlr.press/v267/zhang25cu.html) · [方法全文](https://arxiv.org/html/2410.11782v3) · [作者代码](https://github.com/yanweiyue/GDesigner)。
-- **方法**：编码智能体描述与任务，加入参考图；通过变分图自编码器生成通信结构，用任务反馈与正则训练设计器。
-- **阅读重点**：区分文本编码器、图设计器和执行任务的大模型；区分按题生成与执行中调整。
-- **边界**：任务效果无法直接通过大模型 API 反传，论文采用策略梯度。主要训练设计器；不是给执行大模型微调参数。
-- **建议**：主线精读；先看 Figure 3、§3.2、§4、§5.1，再看 Appendix A 和代码。
+  [![gdesigner：原论文 Figure 3](https://arxiv.org/html/2410.11782v3/framework-1.png)](https://proceedings.mlr.press/v267/zhang25cu.html)
 
-### III3. Assemble Your Crew: Automatic Multi-agent Communication Topology Design via Autoregressive Graph Generation — ARG-Designer
+- [[2025-ICML]](https://arxiv.org/abs/2502.04180) **Multi-agent Architecture Search via Agentic Supernet** [PDF](https://arxiv.org/pdf/2502.04180) [🐙 Code](https://github.com/bingreeky/MaAS)
+  - 简介（中文）：MaAS 将 CoT、辩论、反思和工具使用等操作模块放进多层概率超网，用控制器根据题目逐层采样实际执行的子网络。执行结果提供任务效果与成本反馈，用于更新架构分布及模块自身的设计。这样学习的是一组候选系统的分布，新题可以选择不同复杂度的流程，而不是训练后只留下一个通用方案；超网节点是操作模块，不应一概理解为独立对话智能体。 **主要结论：** 六个基准中，在优于所比较系统的同时，推理费用约为这些基线的 6%–45%；按题分配架构与资源，比所有题运行同一套复杂流程更经济。
+  - Intro (EN): MaAS places operators such as chain-of-thought, debate, reflection, and tool use inside a multilayer probabilistic supernet. A query-conditioned controller samples the subnetwork to execute. Performance and cost feedback update both architecture distributions and operator designs. Rather than retaining one universal workflow, it learns a distribution from which different queries can receive differently complex systems. Supernet nodes are operators, not necessarily independent conversational agents. **Findings:** Across six benchmarks, the method outperforms the compared systems at approximately 6%–45% of their inference costs, supporting query-dependent architecture and resource allocation.
 
-- **作者 / 年份 / 发表**：Shiyuan Li 等；AAAI 2026。
-- **入口**：[正式论文](https://ojs.aaai.org/index.php/AAAI/article/view/39481)。
-- **方法**：根据任务逐步决定智能体数量、角色和连接。
-- **阅读重点**：搜索空间从“现有节点之间连边”扩展到“成员与结构共同设计”。
-- **边界**：角色、数量和边同时变化，单独归因给通信拓扑更困难。
-- **建议**：读懂 G-Designer 后再读。
+  [![maas：原论文 Figure 2](https://arxiv.org/html/2502.04180v2/MAAS-framework.drawio.png)](https://arxiv.org/abs/2502.04180)
 
-<a id="online"></a>
+- [[2025-ACL]](https://aclanthology.org/2025.acl-long.757/) **MasRouter: Learning to Route LLMs for Multi-Agent Systems** [PDF](https://arxiv.org/pdf/2502.11133v1) [🐙 Code](https://github.com/yanweiyue/masrouter)
+  - 简介（中文）：MasRouter 认为只选择一个合适的 LLM 不够，系统还需联合决定怎样协作。它把决策拆成条件级联：根据题目确定协作模式及团队规模，再分配角色，最后为各角色选择底座模型，并用兼顾任务效果与推理成本的反馈训练路由器。新题到来时执行相应的团队配置。其结构适应主要来自协作模式的选择和成员配置，而不是像图生成器那样逐条自由生成通信边。 **主要结论：** 在 MBPP 上改善所比较基线的效果，在 HumanEval 上相对先进方法最多减少 52.07% 开销；为角色联合选择协作模式与底座模型具有实际成本收益。
+  - Intro (EN): MasRouter extends model routing to joint multi-agent configuration. Conditioned on the query, a cascade selects a collaboration mode and team size, assigns roles, and chooses a backbone for each role. Training feedback balances task performance and inference cost. New queries are routed to corresponding team configurations. Structural adaptation primarily comes from choosing collaboration modes and configuring participants, rather than freely generating every communication edge. **Findings:** The method improves results on MBPP and reduces overhead by up to 52.07% against state-of-the-art methods on HumanEval, supporting joint collaboration and backbone routing.
+
+  [![masrouter：原论文 Figure 2](https://arxiv.org/html/2502.11133v1/main.png)](https://aclanthology.org/2025.acl-long.757/)
+
+- [[2025-ECAI]](https://arxiv.org/abs/2506.02951) **Adaptive Graph Pruning for Multi-Agent Communication** [PDF](https://arxiv.org/pdf/2506.02951) [🐙 Code](https://github.com/Resurgamm/AGP)
+  - 简介（中文）：AGP 同时学习“保留哪些成员”和“这些成员怎样连”。第一阶段在不同规模的候选成员子图上搜索、评估通信结构，将较优图及成员掩码对齐到最大图，作为监督数据；第二阶段用共享图表示和两个预测头，分别生成边权与成员掩码。新查询与成员描述共同作为输入，因此团队大小和连接都能随题目变化。 **主要结论：** 在通用推理、数学及代码生成的六个基准上，联合剪节点与边取得较好的效果和 token 成本折中；消融显示固定成员数量或仅优化一类剪枝会损失收益。剪枝效果来自这些实验设置，不能把摘要中的最高节省比例视为普遍保证。
+  - Intro (EN): AGP jointly decides which agents remain and how they communicate. Stage I searches and evaluates graphs from differently sized agent subsets, mapping selected graphs and node masks into a maximum-graph reference frame as supervision. Stage II uses shared graph features with edge-weight and node-mask prediction heads, conditioned on agent descriptions and the query. **Findings:** Across six general-reasoning, mathematics, and coding benchmarks, joint node and edge pruning yields a favorable performance–token-cost trade-off. Ablations support combining the two decisions rather than fixing team size or optimizing only one pruning component; reported savings apply to the evaluated settings.
+
+  [![agp：原论文 Figure 2](https://arxiv.org/html/2506.02951v3/framework.png)](https://arxiv.org/abs/2506.02951)
+
+- [[2025-EMNLP Industry]](https://aclanthology.org/2025.emnlp-industry.144/) **AMAS: Adaptively Determining Communication Topology for LLM-based Multi-agent System** [PDF](https://arxiv.org/pdf/2510.01617v3)
+  - 简介（中文）：AMAS 采用“先找图、再按题选图”的两阶段路线：先以任务反馈优化通信连接，积累有效候选图；再使用 LoRA 适配 LLM 图选择器，学习预测题目与候选结构组合的质量。推理时为当前题目给候选图评分，选择预测收益较高的图执行。它把在线决策变成候选库中的路由问题，避免对每道题重新进行完整的连接搜索。 **主要结论：** 在问答、数学推理及代码任务和多个底座模型上优于所比较的单／多智能体方案，说明从候选拓扑库中按题选择也能取得适应性收益。
+  - Intro (EN): AMAS first optimizes communication links using task feedback to obtain candidate graphs. It then uses LoRA to adapt an LLM-based graph selector that predicts the quality of query–graph combinations. At inference time, candidates are scored for the current question and the graph with the highest predicted reward is executed. Online adaptation therefore becomes routing within a learned candidate pool, avoiding a complete connectivity search for every query. **Findings:** Results across question answering, mathematics, coding, and multiple backbones improve over the compared single- and multi-agent methods, supporting query-conditioned selection from candidate topologies.
+
+  [![amas：原论文 Figure 1](https://arxiv.org/html/2510.01617v3/AMAS_framework.png)](https://aclanthology.org/2025.emnlp-industry.144/)
+
+- [[2025-EMNLP]](https://aclanthology.org/2025.emnlp-main.623/) **Understanding the Information Propagation Effects of Communication Topologies in LLM-based Multi-Agent Systems** [PDF](https://arxiv.org/pdf/2505.23352v1) [🐙 Code](https://github.com/se7esx/EIB)
+  - 简介（中文）：通过反事实分析研究正确信息和错误信息怎样沿通信图传播，发现过密连接会放大错误，过稀连接也会阻碍有效信息。由此提出 EIB-Learner：用稀疏与稠密两种图视角建模，再根据当前题目融合连接系数。这篇把“为什么某种拓扑更好”与“怎样生成更好的拓扑”结合起来。 **主要结论：** 实证分析中适度稀疏的图通常更好：连接过多易传播错误，过少又阻断有效信息；融合两种视角的 EIB-Learner 在任务效果、通信成本和抗扰动方面取得更好的平衡。
+  - Intro (EN): The paper uses counterfactual analysis to study beneficial and erroneous information propagation. EIB-Learner models complementary sparse and dense graph views, then combines their connectivity coefficients through query-aware fusion. It links topology generation to the trade-off between suppressing error spread and preserving useful information exchange. **Findings:** Moderately sparse graphs usually perform best in the empirical analysis, balancing error suppression and useful diffusion. EIB-Learner improves the observed trade-off among performance, cost, and robustness.
+
+  [![eib：原论文 Figure 3](https://arxiv.org/html/2505.23352v1/framework.svg)](https://aclanthology.org/2025.emnlp-main.623/)
+
+- [[2026-AAAI]](https://ojs.aaai.org/index.php/AAAI/article/view/39481) **Assemble Your Crew: Automatic Multi-agent Communication Topology Design via Autoregressive Graph Generation** [PDF](https://arxiv.org/pdf/2507.18224v4) [🐙 Code](https://github.com/Shiy-Li/ARG-Designer)
+  - 简介（中文）：ARG-Designer 把组建团队写成条件自回归图生成：根据题目依次生成成员角色及其与已有成员的连接，并决定何时停止，从而联合确定数量、角色和通信边。训练采用两阶段课程：先用能够完成任务的丰富结构学习正确协作，再加入简单结构、成功剪枝结构和回放样本，学习在保留效果的同时减少成员与连接。测试时一次生成适合新题的团队，再执行协作。 **主要结论：** 六个基准中同时改善任务表现与 token 效率，并展现角色池扩展能力；联合决定成员、角色和边，比只在固定成员上修改模板具有更大的设计空间。
+  - Intro (EN): ARG-Designer autoregressively generates agent roles, connections to existing members, and a stopping decision conditioned on the query. This jointly determines team size, roles, and edges. A two-stage curriculum first teaches functional collaboration using successful resource-rich graphs, then combines simpler configurations, successfully pruned graphs, and replay examples to encourage efficiency. At inference time, it generates a team for the new question before collaborative execution. **Findings:** Across six benchmarks, the method improves task performance and token efficiency and demonstrates extensibility, supporting joint team composition and connectivity beyond fixed-member templates.
+
+  [![arg：原论文 Figure 2](https://arxiv.org/html/2507.18224v4/workflow.png)](https://ojs.aaai.org/index.php/AAAI/article/view/39481)
+
+- [[2026-ICLR]](https://iclr.cc/virtual/2026/poster/10011674) **Graph-of-Agents: A Graph-based Framework for Multi-Agent LLM Collaboration** [PDF](https://arxiv.org/pdf/2604.17148v1) [🐙 Code](https://github.com/UNITES-Lab/GoA)
+  - 简介（中文）：GoA 先根据题目和描述模型专长的 model card，从候选池中选择成员，再让成员给出初始回答，通过两两比较确定回答的相对优劣并建立有向图。先沿较强回答指向较弱回答的边传递信息以改进后者，再反向传递使原先较强的回答也得到修订，最后用图上的选择或综合操作输出答案。图由当前题目及初始回答决定，随后按双向消息传递流程执行。 **主要结论：** 在多领域及专门领域基准中，从 6 个模型中选出的 3 个成员超过了使用全部 6 个成员的近期多智能体基线，说明成员相关性与有序信息传递可比直接堆模型更有效。
+  - Intro (EN): GoA selects agents from a pool using the query and model cards describing their expertise. Initial responses are compared pairwise to construct a directed graph. Forward message passing from stronger to weaker responses supports revision, followed by reverse passing to refine the initially stronger responses. Graph pooling then selects or synthesizes the final answer. The query and initial responses determine the graph, which is subsequently used for bidirectional collaboration. **Findings:** Across the evaluated general and specialized benchmarks, three agents selected from a six-model pool outperform recent baselines using all six, supporting relevant selection and structured message passing.
+
+  [![goa：原论文 Figure 2](https://arxiv.org/html/2604.17148v1/crop_figure_2_final.png)](https://iclr.cc/virtual/2026/poster/10011674)
+
+- [[2026-ICLR]](https://arxiv.org/abs/2603.01089) **CARD: Towards Conditional Design of Multi-agent Topological Structures** [PDF](https://arxiv.org/pdf/2603.01089) [🐙 Code](https://github.com/Warma10032/CARD)
+  - 简介（中文）：CARD 将条件化拓扑从题目进一步扩展到模型能力、工具与知识资源状态。它分别编码成员属性和环境条件，通过条件变分图生成模块预测连接，并用任务效用与条件相关通信成本优化设计器；部署环境改变时，更新条件输入即可重新解码图，无需重新训练。这里的动态性主要来自外部条件变化，而非必须等待答案错误才改图。 **主要结论：** 在 HumanEval、MATH 和 MMLU 及模拟环境变化下，条件化设计获得较好的平均准确率和适应能力；简单地把条件拼进提示有时反而降低表现，说明条件如何进入图生成过程同样关键。
+  - Intro (EN): CARD conditions topology on agent attributes and environmental states, including model capability, tools, and knowledge resources. Separate profile and condition encoders feed a conditional variational graph generator, optimized for task utility and condition-dependent communication cost. Refreshed conditions can trigger graph re-decoding at deployment without retraining; adaptation need not wait for an incorrect answer. **Findings:** HumanEval, MATH, MMLU, and simulated environmental shifts show improved average accuracy and adaptability. Merely appending conditions to prompts can hurt performance, highlighting the importance of incorporating them into graph generation.
+
+  [![card：原论文 Figure 2](https://arxiv.org/html/2603.01089v1/main_figure.png)](https://arxiv.org/abs/2603.01089)
+
+- [[2026-arXiv]](https://arxiv.org/abs/2604.17503) **SkillGraph: Self-Evolving Multi-Agent Collaboration with Multimodal Graph Topology** [PDF](https://arxiv.org/pdf/2604.17503) [🐙 Code](https://github.com/niez233/skillgraph)
+  - 简介（中文）：SkillGraph 针对视觉多智能体系统同时处理技能固定与路由忽略图像的问题。成员检索技能后，多模态图 Transformer 融合图像局部特征、问题语义及技能表示，为当前查询预测通信边；训练过程中累积失败记录，定期修改或新增技能，并把更新后的技能表示送回拓扑生成器。这里的技能是可检索的推理策略，不等于持续微调每个底座模型。 **主要结论：** 在 MMBench、MathVista、RealWorldQA 和 InfoVQA 上，论文报告对所测五种初始结构及不同底座的改进；消融支持技能演化与多模态拓扑设计各自有贡献。实验中的技能更新依赖失败监督，不能据此声称在无正确性反馈的部署中也能同样自我改进。
+  - Intro (EN): SkillGraph addresses fixed skills and visually uninformed routing in visual multi-agent systems. Retrieved skills, image patches, and query semantics feed a multimodal graph Transformer that predicts query-conditioned communication edges. During training, accumulated failures trigger skill modification or creation, and updated skill embeddings feed back into topology design. Skills are retrievable reasoning strategies rather than continual backbone fine-tuning. **Findings:** MMBench, MathVista, RealWorldQA, and InfoVQA evaluations report improvements across five initial structures and multiple backbones; ablations support both components. Skill evolution uses failure supervision, so these results do not establish equivalent improvement without correctness feedback at deployment.
+
+  [![skillgraph：原论文 Figure 2](https://arxiv.org/html/2604.17503v1/fig/framework.png)](https://arxiv.org/abs/2604.17503)
+
+- [[2026-arXiv]](https://arxiv.org/abs/2605.17359) **Learning Transferable Topology Priors for Multi-Agent LLM Collaboration Across Domains** [PDF](https://arxiv.org/pdf/2605.17359)
+  - 简介（中文）：TopoPrior 从多个领域离线收集的协作图中学习可迁移的结构先验，利用条件变分图模型和题目相关的潜在空间适配，为新题生成初始拓扑。生成结果还能交给后续拓扑演化方法继续调整。其重点是减少每道题从零搜索的成本，并提升跨领域初始化的质量。 **主要结论：** 在多领域推理实验中，接入多种既有拓扑演化方法后均改善表现并减少在线 token 使用，表明离线学到的结构先验能降低每题从零搜索的负担。
+  - Intro (EN): TopoPrior learns structural priors from collaboration graphs collected across domains. A conditional variational graph model and query-conditioned latent adaptation produce initial topologies for downstream refinement. The approach shifts part of per-query search into reusable offline learning, aiming to reduce online search cost and improve cross-domain initialization. **Findings:** Across the tested multi-domain reasoning settings, initialization improves several topology-evolution backbones while reducing online token use, supporting amortization through offline structural priors.
+
+  [![topoprior：原论文 Figure 2](https://arxiv.org/html/2605.17359v1/model.png)](https://arxiv.org/abs/2605.17359)
+
+- [[2026-arXiv]](https://arxiv.org/abs/2606.27492) **QueenBee Planner: Skill-Evolving Communication Topologies for Token-Efficient LLM Multi-Agent Systems** [PDF](https://arxiv.org/pdf/2606.27492) [🐙 Code](https://github.com/RobinTian-7/QueenBeePlanner)
+  - 简介（中文）：QueenBee 固定执行成员、任务适配器与评分函数，让外层规划器根据任务和技能记忆生成时序有向无环图，明确各轮谁向谁传消息、谁合并、谁输出答案。执行轨迹被提炼成保留、修改、避免三类结构经验，经留出验证等筛选后用于后续图生成；这是跨运行积累设计经验，不等于同一次执行中不断重连。 **主要结论：** 在 Count-Frequency 的 fulltest 设置中，最佳生成图将 RMSE 从最强固定拓扑的 12.53 降至 7.87，同时减少消息、模型调用和 token；Silo-Bench 风格任务也呈现改善。这支持在固定成员能力下优化通信结构，但证据限于论文的聚合与分布式协调任务。
+  - Intro (EN): QueenBee freezes workers, the task adapter, and scoring while an outer planner generates temporal DAGs specifying message routes, merging, and final-answer ownership. Execution traces become Preserve, Modify, or Avoid design rules, filtered through held-out evaluation and other acceptance checks for later graph generation. This is cross-run design-memory evolution rather than continuous within-run rewiring. **Findings:** In Count-Frequency fulltest, the best generated graph reduces RMSE from the strongest fixed topology’s 12.53 to 7.87 while lowering messages, model calls, and tokens. Silo-Bench-style coordination also improves; evidence is limited to these aggregation and coordination settings.
+
+  [![queenbee：原论文 Figure 1](https://arxiv.org/html/2606.27492v1/queenbee_overview_copy.png)](https://arxiv.org/abs/2606.27492)
+
+- [[2026-ACL]](https://aclanthology.org/2026.acl-long.1764/) **Dynamic Generation of Multi LLM Agents Communication Topologies with Graph Diffusion Models** [PDF](https://arxiv.org/pdf/2510.07799v2) [🐙 Code](https://github.com/ericjiang18/diffusion_agent)
+  - 简介（中文）：GTD 将拓扑生成建模为有条件的离散图扩散：从带噪连接出发，结合题目、可用智能体与工具逐步去噪。一个轻量代理模型预测候选图的准确率、效用和成本等奖励，通过无需梯度的搜索引导每一步结构更新，最终输出供团队执行的稀疏图。它把多目标权衡放到图的生成过程中；这里的反复改图发生在生成阶段，不能理解成成员每讨论一轮就依据执行反馈重连。 **主要结论：** 移除代理模型引导后，GSM8K 准确率从 94.14% 降至 88.42%；团队规模实验中，超过 4 个成员后收益递减。这支持奖励引导的价值，也说明人数增加的收益有条件。
+  - Intro (EN): GTD formulates topology synthesis as conditional discrete graph diffusion. Starting from noisy connections, it iteratively denoises a graph using the query, available agents, and tools. A lightweight proxy predicts multi-objective rewards such as accuracy, utility, and cost, providing gradient-free guidance during generation. The resulting sparse graph is then executed. Its iterative graph updates belong to topology synthesis, rather than feedback-driven rewiring after every round of agent discussion. **Findings:** Removing proxy guidance lowers GSM8K accuracy from 94.14% to 88.42%; team-size experiments show diminishing returns beyond four agents, supporting guided generation and conditional scaling benefits.
+
+  [![gtd：原论文 Figure 2](https://arxiv.org/html/2510.07799v2/Figures/flow_chart.png)](https://aclanthology.org/2026.acl-long.1764/)
+
 ## IV. 根据执行反馈调整 · 动态拓扑
 
-### IV1. A Dynamic LLM-Powered Agent Network for Task-Oriented Agent Collaboration — DyLAN
+- [[2024-ICLR]](https://proceedings.iclr.cc/paper_files/paper/2024/hash/578e65cdee35d00c708d4c64bce32971-Abstract-Conference.html) **AgentVerse: Facilitating Multi-Agent Collaboration and Exploring Emergent Behaviors** [PDF](https://arxiv.org/pdf/2308.10848v3) [🐙 Code](https://github.com/OpenBMB/AgentVerse)
+  - 简介（中文）：AgentVerse 将任务求解组织成专家招募、协作决策、行动执行和结果评估四个阶段。招募者根据目标生成专家角色，成员按设定的讨论方式制定行动并执行；若评估发现目标尚未完成，反馈返回招募阶段，用于调整下一轮团队组成。它的主要自适应对象是成员及角色配置，通信协议可以预先指定；论文还分析协作中出现的趋同、分工等群体行为。 **主要结论：** 在文本理解、推理、代码、工具和具身任务中，多成员协作优于论文设置中的单成员对照；观察到的分工等行为说明团队互动可带来收益，但不能保证任意角色组合都有效。
+  - Intro (EN): AgentVerse cycles through expert recruitment, collaborative decision-making, action execution, and evaluation. A recruiter generates expert roles for the goal; agents discuss and execute actions through configured interaction protocols. When evaluation finds the goal unmet, feedback returns to recruitment to adjust the next round’s team composition. Adaptation primarily concerns participants and roles, while communication protocols can remain predefined. The paper also analyzes emergent group behaviors during collaboration. **Findings:** Across language, reasoning, coding, tool-use, and embodied tasks, groups improve over the evaluated single-agent settings; observed cooperative behaviors support benefits without guaranteeing every role combination works.
 
-- **作者 / 年份 / 发表**：Zijun Liu 等；2023 首发，COLM 2024。
-- **入口**：[论文](https://arxiv.org/abs/2310.02170) · [作者代码](https://github.com/SALT-NLP/DyLAN)。
-- **方法**：通过智能体重要性评价选择团队，再进行动态任务协作。
-- **阅读重点**：选择谁参与、何时停止，与直接学习任意通信边的区别。
-- **边界**：读“dynamic”时要注明具体变化的对象，不能只靠标题分类。
+  [![agentverse：原论文 Figure 1](https://arxiv.org/html/2308.10848v3/pipeline.png)](https://proceedings.iclr.cc/paper_files/paper/2024/hash/578e65cdee35d00c708d4c64bce32971-Abstract-Conference.html)
 
-### IV2. TodyComm: Task-Oriented Dynamic Communication for Multi-Round LLM-based Multi-Agent System
+- [[2024-COLM]](https://arxiv.org/abs/2310.02170) **A Dynamic LLM-Powered Agent Network for Task-Oriented Agent Collaboration** [PDF](https://arxiv.org/pdf/2310.02170) [🐙 Code](https://github.com/SALT-NLP/DyLAN)
+  - 简介（中文）：DyLAN 先在试运行中让成员互评前驱回答，用 Agent Importance Score 汇总贡献并筛选团队；正式解题时，将成员组织成沿轮次展开的前馈网络，读取前一轮结果继续推理。运行中再根据回答排序缩减参与成员，并在答案达到一致性条件时提前停止。它同时包含前期选人和执行时缩队，动态变化主要是成员参与和推理轮数，而非任意形式的逐边重连。 **主要结论：** 在代码、决策、通用与算术推理任务中，以适中的计算开销优于所比较基线；团队选择实验显示，基于实际贡献筛选通常比随机选人或仅按角色名称判断更有效。
+  - Intro (EN): DyLAN uses predecessor-response ratings from preliminary runs to compute Agent Importance Scores and select a team. During task solving, agents operate in a temporal feed-forward network, revising answers using previous-round outputs. Response ranking reduces the active team and agreement-based stopping can end inference early. It combines preliminary selection with runtime team reduction; its dynamic behavior chiefly concerns participation and reasoning depth rather than unrestricted edge-by-edge rewiring. **Findings:** Across coding, decision-making, general reasoning, and arithmetic tasks, DyLAN improves over compared baselines at moderate cost; contribution-based selection also outperforms tested random and role-prior selection strategies.
 
-- **作者 / 年份 / 状态**：Wenzhe Fan 等；2026-02 首发、2026-05 修订，按 arXiv 预印本收录。
-- **入口**：[论文](https://arxiv.org/abs/2602.03688)。
-- **方法**：利用行为信息生成逐轮适应的通信拓扑，通过策略梯度优化任务效用。
-- **阅读重点**：图从 G(Q) 变为依赖执行历史的 G_t(Q, history) 后，需要观察什么状态。
-- **边界**：动态对抗和预算约束是其重要实验条件，迁移到普通任务需要再验证。
-- **建议**：近期进阶阅读，不作为初学者第一篇。
+  [![dylan：原论文 Figure 2](https://arxiv.org/html/2310.02170v2/overview-old.v4.png)](https://arxiv.org/abs/2310.02170)
 
-<a id="evaluation"></a>
-## 附录：基础对照与评估
+- [[2024-COLM]](https://openreview.net/forum?id=BAakY1hNKS) **AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversations** [PDF](https://arxiv.org/pdf/2308.08155v2) [🐙 Code](https://github.com/microsoft/autogen)
+  - 简介（中文）：AutoGen 以可对话智能体和 conversation programming 组织系统：统一消息收发与回复接口，收到消息后通过模型、工具或人工输入生成回复，驱动下一步计算。开发者用代码和自然语言规定交互规则，既可编排固定流程，也可根据对话状态调用其他成员；GroupChatManager 还能动态选择发言者并广播回答。这里归入动态部分是因为它支持运行时调度，但论文提出的是通用编排框架，不是学习最优通信图的算法。 **主要结论：** 数学、代码、问答等实例表明，同一对话接口能够组织多种可运行应用，并在相应评测中取得有效结果；论文主要验证框架的通用性，未给出某一种通信图普遍最优的结论。
+  - Intro (EN): AutoGen combines conversable agents with conversation programming. Unified send/receive and reply interfaces connect LLM responses, tools, and human input into conversation-driven computation. Developers specify interaction rules in code and natural language, supporting fixed workflows and context-dependent calls to other agents. A GroupChatManager can dynamically select speakers and broadcast responses. It appears here for its runtime scheduling capabilities, while the contribution is a general orchestration framework rather than an algorithm for learning an optimal graph. **Findings:** Mathematics, coding, question-answering, and other examples validate diverse working applications through a common conversation interface; the evidence supports framework versatility, not one universally optimal communication graph.
 
-### P1. Self-Consistency Improves Chain of Thought Reasoning in Language Models
+  [![autogen：原论文 Figure 1](https://arxiv.org/html/2308.08155v2/autogen_landing_full.png)](https://openreview.net/forum?id=BAakY1hNKS)
 
-- **作者 / 年份 / 发表**：Xuezhi Wang 等；2022 首发，ICLR 2023。
-- **入口**：[论文](https://arxiv.org/abs/2203.11171)。
-- **方法**：独立采样多条推理路径，再汇总一致答案。
-- **为何收录**：不是多智能体通信论文，但它是判断“交流本身是否有效”的必要对照。
-- **阅读重点**：多次采样的收益与智能体交流的收益如何区分。
-- **边界**：不能把多次独立调用直接称为智能体之间的协作通信。
+- [[2025-ICLR]](https://proceedings.iclr.cc/paper_files/paper/2025/hash/39af4f2f9399122a14ccf95e2d2e7122-Abstract-Conference.html) **Self-Evolving Multi-Agent Collaboration Networks for Software Development** [PDF](https://arxiv.org/pdf/2410.16946v1) [🐙 Code](https://github.com/yuzhu-cai/rSDE-Bench)
+  - 简介（中文）：EvoMAC 用编码团队生成软件，用测试团队检查需求是否实现，再把测试反馈交给更新团队。更新团队通过 textual backpropagation，即用自然语言追溯失败原因与责任环节，修改编码智能体的提示词和协作网络，随后重新生成、测试并迭代。结构调整发生在同一个软件任务的执行过程中；这里的“反向传播”是文字反馈推动团队修订，不是对底座模型参数做梯度训练。 **主要结论：** 在软件级 rSDE-Bench 和函数级 HumanEval 上优于所比较方法；其需求满足度评测也与人工评价较一致，支持用具体测试反馈推动团队修订。
+  - Intro (EN): EvoMAC combines a coding team, a testing team, and an updating team. Tests check requirement fulfillment; textual backpropagation uses natural-language feedback to trace failures and revise coding-agent prompts and collaboration structure. The system then generates and tests the software again. Adaptation occurs while solving the same development task. Here, backpropagation refers to feedback-driven revisions of the team, not gradient updates to backbone-model parameters. **Findings:** Results outperform compared methods on software-level rSDE-Bench and function-level HumanEval; requirement-aware evaluation aligns closely with human judgments, supporting test-grounded team revision.
 
-### P2. Improving Factuality and Reasoning in Language Models through Multiagent Debate
+  [![evomac：原论文 Figure 2](https://arxiv.org/html/2410.16946v1/figures/System.png)](https://proceedings.iclr.cc/paper_files/paper/2025/hash/39af4f2f9399122a14ccf95e2d2e7122-Abstract-Conference.html)
 
-- **作者 / 年份 / 发表**：Yilun Du 等；2023 首发，ICML 2024。
-- **入口**：[正式论文](https://proceedings.mlr.press/v235/du24e.html) · [arXiv](https://arxiv.org/abs/2305.14325)。
-- **方法**：多个模型实例先作答，再读取同伴回答并多轮修正。
-- **阅读重点**：一条来自同伴的消息具体怎样进入下轮提示词；多数一致为何不等于答案正确。
-- **边界**：论文的改善基于具体模型与任务，不能直接推导为任意模型都适合辩论。
-- **建议**：必读；适合先做机制复现。
+- [[2025-ICLR]](https://arxiv.org/abs/2410.02189) **Agent-Oriented Planning in Multi-Agent Systems** [PDF](https://arxiv.org/pdf/2410.02189) [🐙 Code](https://github.com/lalaliat/Agent-Oriented-Planning)
+  - 简介（中文）：AOP 关注任务拆分是否适合团队成员的实际能力。元智能体联合分解任务、指定成员和依赖关系；奖励模型在不逐一调用所有成员的情况下预测子任务分配质量，结合成员成功案例修改含糊或过难的子任务，计划检测器再检查整体完整性与冗余。评估和执行结果推动修订，再汇总最终答案。动态对象主要是子任务与分配关系。 **主要结论：** 在论文的真实世界查询评测中，AOP 优于所比较的单智能体及规划基线；移除计划检测器、奖励模型或成员代表案例都会降低准确率，支持把可解决性、完整性和非冗余性联合纳入规划。
+  - Intro (EN): AOP aligns task decomposition with agents’ actual capabilities. A meta-agent jointly proposes subtasks, assignments, and dependencies; a reward model predicts assignment quality without executing every candidate agent. Representative successful tasks guide revisions of ambiguous or difficult subtasks, while a detector checks completeness and redundancy. Evaluation and execution feed plan revision before aggregation. The changing objects are subtasks and assignments. **Findings:** On the evaluated real-world queries, AOP outperforms the compared single-agent and planning baselines. Removing the detector, reward model, or representative works reduces accuracy, supporting their complementary roles.
 
-### P3. Why Do Multi-Agent LLM Systems Fail? — MAST
+  [![agentplanning：原论文 Figure 2](https://arxiv.org/html/2410.02189v2/overall.png)](https://arxiv.org/abs/2410.02189)
 
-- **作者 / 年份 / 发表**：Mert Cemri 等；NeurIPS 2025，Datasets and Benchmarks Track。
-- **入口**：[正式论文](https://papers.nips.cc/paper_files/paper/2025/hash/b1041e52d3be19f0a9bc491657488e4a-Abstract-Datasets_and_Benchmarks_Track.html) · [arXiv](https://arxiv.org/abs/2503.13657)。
-- **方法**：分析真实执行轨迹中的协作失败，建立分类体系。
-- **阅读重点**：系统设计、智能体间目标或理解不一致、验证与终止问题。
-- **边界**：失败分类不是某一种拓扑必然成功或失败的定理。
-- **建议**：和性能提升论文一起读。
+- [[2025-ICLR]](https://proceedings.iclr.cc/paper_files/paper/2025/hash/ba84da6921f3040b74ee163aa7451f53-Abstract-Conference.html) **Flow: Modularized Agentic Workflow Automation** [PDF](https://arxiv.org/pdf/2501.07834v2) [🐙 Code](https://github.com/tmllab/2025_ICLR_FLOW)
+  - 简介（中文）：Flow 把工作流表示为以子任务为节点、依赖为边的 AOV 图，再为子任务分配执行智能体。生成和更新候选图时，优先考虑可并行程度与依赖复杂度；运行中由全局检查器读取中间产物及任务状态，必要时增删、修改、重跑子任务或重新分配成员。节点表示工作活动，不能直接把节点数当成独立智能体数量。 **主要结论：** 在五子棋开发、LaTeX 幻灯片制作和网站设计三个任务的评测中，Flow 的平均成功率和人工评分高于 AutoGen、MetaGPT 与 CAMEL；结果支持模块化和执行时修订在这些制作任务中的作用，尚不是任意任务上的通用优越性证明。
+  - Intro (EN): Flow represents workflows as activity-on-vertex graphs: nodes are subtasks and edges are dependencies, with agents allocated to execution. Candidate graphs favor parallelism and lower dependency complexity. A global inspector uses intermediate outputs and task states to add, remove, edit, rerun, or reassign subtasks. Activity nodes should not be equated with independent agents. **Findings:** Across Gobang development, LaTeX Beamer writing, and website design, Flow achieves higher average success and human ratings than AutoGen, MetaGPT, and CAMEL. These results support modularity and runtime revision in the evaluated production tasks, rather than universal superiority.
 
-### P4. Single-Agent LLMs Outperform Multi-Agent Systems on Multi-Hop Reasoning Under Equal Thinking Token Budgets
+  [![flow：原论文 Figure 2](https://arxiv.org/html/2501.07834v2/figures/camera2.png)](https://proceedings.iclr.cc/paper_files/paper/2025/hash/ba84da6921f3040b74ee163aa7451f53-Abstract-Conference.html)
 
-- **作者 / 年份 / 状态**：Dat Tran、Douwe Kiela；2026-04，按 arXiv 预印本收录。
-- **入口**：[论文](https://arxiv.org/abs/2604.02460)。
-- **方法**：在思考 token 预算匹配条件下比较单智能体与多智能体。
-- **阅读重点**：区分算力、上下文利用与协作结构的贡献。
-- **边界**：结论针对所测多跳推理任务与模型，不能推广为所有多智能体系统都无效。
-- **建议**：开始做性能对比前阅读。
+- [[2025-ICLR]](https://proceedings.iclr.cc/paper_files/paper/2025/hash/59c27bf8d56d3d50c7aeaf7535dee975-Abstract-Conference.html) **Internet of Agents: Weaving a Web of Heterogeneous Agents for Collaborative Intelligence** [PDF](https://arxiv.org/pdf/2407.07061v2) [🐙 Code](https://github.com/OpenBMB/IoA)
+  - 简介（中文）：IoA 解决不同框架、工具和知识来源的智能体难以接入同一协作系统的问题。它用统一通信协议与客户端—服务器架构完成成员注册、发现和消息路由；智能体按任务自主组队，还可建立嵌套子团队，并通过对话状态控制在讨论、任务分配与执行之间切换。通信关系由组队和会话决策形成，而非预先写死整条流水线。 **主要结论：** 在通用助手、具身协作和检索增强任务的评测中，异构成员协作优于所列基线；团队形成与通信分析同时发现重复交流等低效行为，说明互联能力带来协作空间，但仍需控制协调成本。
+  - Intro (EN): IoA connects agents with heterogeneous frameworks, tools, and knowledge through an integration protocol and client–server architecture for registration, discovery, and message routing. Agents form teams and nested subteams, while conversation-state control coordinates discussion, assignment, and execution. Teaming and conversation decisions determine communication relations. **Findings:** General-assistant, embodied-collaboration, and retrieval-augmented evaluations show gains over the listed baselines. Team-formation and communication analyses also reveal inefficient repeated exchanges, demonstrating that heterogeneous interoperability still requires attention to coordination cost.
 
-<a id="history"></a>
-## 附录：历史背景（选读）
+  [![ioa：原论文 Figure 4](https://arxiv.org/html/2407.07061v2/walkthrough.png)](https://proceedings.iclr.cc/paper_files/paper/2025/hash/59c27bf8d56d3d50c7aeaf7535dee975-Abstract-Conference.html)
 
-### H1. Flocks, Herds, and Schools: A Distributed Behavioral Model
+- [[2025-NAACL]](https://arxiv.org/abs/2406.14228) **EvoAgent: Towards Automatic Multi-Agent Generation via Evolutionary Algorithms** [PDF](https://arxiv.org/pdf/2406.14228) [🐙 Code](https://github.com/siyuyuan/evoagent)
+  - 简介（中文）：EvoAgent 从已有智能体框架出发，让父代先回答当前请求，再根据回答分析需要补充的技能并生成子代成员；变异强调成员差异，质量检查筛选候选，随后汇总子代与上一轮结果，重复演化。它自动改变的是成员配置与专业分工，并未直接学习任意通信图的邻接矩阵。 **主要结论：** 在推理、多模态、ScienceWorld 和 TravelPlanner 等实验中，演化生成的成员改善任务表现，并能接入不同人工设计框架；对照实验显示质量检查有助于多轮演化，并分析了成员数量、迭代次数及结果选择策略的影响。它适合研究“团队中应该有哪些成员”如何影响协作，不应被介绍成逐边拓扑优化方法。
+  - Intro (EN): EvoAgent starts from an existing agent framework. Parent responses to the current request guide skill improvements and child-agent generation; mutation encourages diversity, quality checks select candidates, and child outputs are integrated with the previous result over iterations. It changes agent configurations and specialization rather than directly learning an arbitrary adjacency matrix. **Findings:** Reasoning, multimodal, ScienceWorld, and TravelPlanner experiments show gains from evolved teams and compatibility with different designed frameworks. Controlled comparisons support quality checks during multi-iteration evolution and examine population size, iteration count, and result-selection strategies. Its relevance is adaptive team composition, not direct edge-wise topology optimization.
 
-Craig W. Reynolds，SIGGRAPH 1987。[作者页面与原文](https://www.red3d.com/cwr/papers/1987/boids.html)。
+  [![evoagent：原论文 Figure 1](https://arxiv.org/html/2406.14228v3/framework.png)](https://arxiv.org/abs/2406.14228)
 
-理解局部规则与个体交互如何形成集体行为。它提供群体智能直觉，不是 LLM 通信的性能证据。
+- [[2025-ACL]](https://aclanthology.org/2025.acl-long.359/) **G-Safeguard: A Topology-Guided Security Lens and Treatment on LLM-based Multi-agent Systems** [PDF](https://arxiv.org/pdf/2502.11127v1) [🐙 Code](https://github.com/wslong20/G-safeguard)
+  - 简介（中文）：把智能体对话表示为带有语义信息的图，利用图神经网络识别异常发言，再通过通信结构干预减少恶意信息扩散。与仅关注正常任务准确率的拓扑设计不同，这项工作研究系统遭受攻击后怎样隔离问题节点及其影响，展示了可靠性驱动的连接调整。 **主要结论：** 多种攻击和底座模型实验中，图异常检测与拓扑干预能够恢复受攻击系统的任务表现；结果支持限制恶意信息传播，但不意味着识别器能发现所有攻击。
+  - Intro (EN): G-Safeguard models agent utterances as a graph and uses graph neural networks to detect anomalous behavior. Topological interventions then limit the propagation of malicious information. It studies communication changes driven by security signals, extending topology design toward recovery and robustness under adversarial attacks. **Findings:** Across tested attacks and backbones, graph detection and topological intervention recover task performance under attack; the results support mitigation rather than guaranteed detection of every attack.
 
-### H2. Collective dynamics of ‘small-world’ networks
+  [![gsafe：原论文 Figure 2](https://arxiv.org/html/2502.11127v1/framework-1.png)](https://aclanthology.org/2025.acl-long.359/)
 
-Duncan J. Watts、Steven H. Strogatz，Nature 1998。[出版页](https://www.nature.com/articles/30918) · [Cornell 保存的原文](https://www.cs.cornell.edu/courses/cs6241/2019sp/readings/Watts-1998-smallworld.pdf)。
+- [[2025-NeurIPS]](https://proceedings.neurips.cc/paper_files/paper/2025/hash/9a379c1b05793d1c42dc832269834515-Abstract-Conference.html) **AgentNet: Decentralized Evolutionary Coordination for LLM-based Multi-Agent Systems** [PDF](https://arxiv.org/pdf/2504.00587v2) [🐙 Code](https://github.com/zoe-yyx/AgentNet)
+  - 简介（中文）：AgentNet 将中心编排者的职责分散到各个成员，每个成员同时负责处理自身擅长的子任务和向合适邻居路由任务。路由依赖成员专长及检索式经验记忆，执行路径组织为有向无环图；随着任务推进和经验积累，成员的专长描述、记忆与连接可以更新。核心是由局部决策逐步形成协作路径，研究在缺少统一调度中心时怎样实现分工、扩展和故障容忍。 **主要结论：** 论文的动态任务实验中，相较集中式对照改善了效率、适应性与扩展表现，支持分布式路由结合经验记忆的可行性；结论依赖于所测任务与成员配置。
+  - Intro (EN): AgentNet distributes orchestration across participants: each agent executes suitable subtasks and routes work to appropriate neighbors. Routing uses expertise and retrieval-based experience, with task execution organized as a DAG. Expertise, memory, and connectivity can evolve as tasks progress and experience accumulates. Local decisions thus form collaboration routes, supporting the study of specialization, scalability, and fault tolerance without a single coordinating controller. **Findings:** In the paper’s dynamic-task evaluations, decentralized routing with retrieval memory improves efficiency, adaptation, and scaling relative to centralized comparisons, within the tested task and agent configurations.
 
-理解局部聚集与短路径如何同时出现。它不能证明小世界拓扑一定最适合 LLM，但能帮助阅读 MacNet 一类结构分析。
+  [![agentnet：原论文 Figure 2](https://arxiv.org/html/2504.00587v2/Figure/main6.png)](https://proceedings.neurips.cc/paper_files/paper/2025/hash/9a379c1b05793d1c42dc832269834515-Abstract-Conference.html)
 
-<a id="scale"></a>
-## 智能体数量与模型规模
+- [[2025-NeurIPS]](https://proceedings.neurips.cc/paper_files/paper/2025/hash/f1320d2e2842169c6fc89dcbd80e94d0-Abstract-Conference.html) **Multi-Agent Collaboration via Evolving Orchestration** [PDF](https://arxiv.org/pdf/2505.19591v2) [🐙 Code](https://github.com/OpenBMB/ChatDev/tree/puppeteer)
+  - 简介（中文）：设置一个通过强化学习训练的中央编排者 puppeteer，依据当前任务状态逐步选择下一位参与推理的智能体，并学习优先调用有效成员、减少低效调用。成员允许被再次调用，因此执行轨迹可以形成包含回路的协作结构，而不受预设链条或有向无环图限制。这里的动态性首先体现在运行时“下一步调用谁”，整体网络由这一系列编排决策逐步形成。 **主要结论：** 开放与封闭领域实验中同时提高效果、降低开销；分析发现训练后形成更紧凑、可循环调用成员的推理结构，表明有效协作不必局限于无环图。
+  - Intro (EN): A reinforcement-learned central puppeteer selects the next reasoning agent according to the evolving task state, favoring useful participants and reducing ineffective calls. Agents can be revisited, allowing collaboration traces with cycles instead of a fixed chain or DAG. Runtime adaptation primarily concerns which agent acts next; the overall organization emerges from this sequence of orchestration decisions rather than a complete graph chosen only before execution. **Findings:** Open- and closed-domain experiments improve performance while reducing cost; analysis associates gains with compact cyclic reasoning structures, showing useful collaboration can extend beyond DAGs.
 
-以下是具体论文设置，不是对全领域的统计。
+  [![puppeteer：原论文 Figure 1](https://arxiv.org/html/2505.19591v2/framework.png)](https://proceedings.neurips.cc/paper_files/paper/2025/hash/f1320d2e2842169c6fc89dcbd80e94d0-Abstract-Conference.html)
 
-| 工作 | 智能体数量 | 模型 | 查证位置 |
-|---|---|---|---|
-| Sparse MAD | 主实验 6；附录另测 4 | GPT-3.5；多模态 GPT-4 系列；对齐标注另有 Mistral 7B | [§3.1、§4.2、Appendix C](https://arxiv.org/html/2406.11776) |
-| G-Designer | 主结果表多智能体方法使用 5；另测 5–20 的规模扩展 | gpt-4-1106-preview、gpt-3.5-turbo-0125 | [Table 1、§5.1、§5.2](https://arxiv.org/html/2410.11782v3) |
-| AgentPrune | 框架整合实验包含 3、5；其他设置随任务而异 | gpt-3.5-turbo-0301、gpt-4-1106-preview | [Implementation Details、Appendix G.1.3](https://arxiv.org/html/2410.02506) |
-| MacNet | 专门研究扩展，作者报告超过千个智能体 | 本版未提取其各实验模型配置 | [摘要](https://arxiv.org/abs/2406.07155) |
+- [[2025-NeurIPS]](https://proceedings.neurips.cc/paper_files/paper/2025/hash/0bc795afae289ed465a65a3b4b1f4eb7-Abstract-Conference.html) **GUARDIAN: Safeguarding LLM Multi-Agent Collaborations with Temporal Graph Modeling** [PDF](https://proceedings.neurips.cc/paper_files/paper/2025/file/0bc795afae289ed465a65a3b4b1f4eb7-Paper-Conference.pdf) [🐙 Code](https://github.com/JialongZhou666/GUARDIAN)
+  - 简介（中文）：GUARDIAN 将多轮回答及通信连接表示为时序属性图，用图卷积捕获成员间关系、时间 Transformer 捕获行为变化，再通过节点属性与图结构的双重重建误差识别异常。检测结果用于移除可疑节点或连接，降低幻觉与注入错误继续传播的机会；增量训练和图抽象用于控制持续监测开销。它根据运行轨迹进行安全干预，区别于只在任务开始前优化正常条件下的通信效率。 **主要结论：** 在幻觉放大、成员被注入错误及通信被干扰等受测场景中，检测与缓解效果优于所比较方法；时序建模和图压缩有助于兼顾防护与资源开销。
+  - Intro (EN): GUARDIAN represents multi-round responses and communication as temporal attributed graphs. Graph convolutions capture inter-agent relationships, a temporal Transformer models behavioral changes, and dual attribute/structure reconstruction yields anomaly scores. Suspicious nodes or links are removed to limit further propagation of hallucinations and injected errors. Incremental training and graph abstraction control monitoring overhead. Its interventions respond to execution traces rather than only optimizing normal-condition communication before a task starts. **Findings:** Across tested hallucination, agent-targeted, and communication-targeted error scenarios, detection and mitigation improve over compared methods, with temporal modeling and abstraction supporting resource efficiency.
 
-计数时另记汇总者、主管、工具节点是否算入 N；不要把角色数、总调用次数和并发数混为一谈。Sparse MAD 正文和多模态附录的模型名称粒度不同：复现具体表格时需按对应设置确认精确版本。
+  [![guardian：原论文 Figure 3](assets/guardian-framework.png)](https://proceedings.neurips.cc/paper_files/paper/2025/hash/0bc795afae289ed465a65a3b4b1f4eb7-Abstract-Conference.html)
 
-GPT 系列闭源模型在这些论文中用 API 名称标识；参数规模未公开披露，不能填写猜测的 B 数。B 表示十亿参数，例如 7B 约为 70 亿参数。
+- [[2025-NeurIPS]](https://proceedings.neurips.cc/paper_files/paper/2025/hash/fe9910d2b03324faeb5371a9658277bb-Abstract-Conference.html) **DyFlow: Dynamic Workflow Framework for Agentic Reasoning** [PDF](https://arxiv.org/pdf/2509.26062v1) [🐙 Code](https://github.com/wyf23187/DyFlow)
+  - 简介（中文）：DyFlow 将流程设计与执行分开：设计器提出当前阶段的高层子目标及操作安排，执行器依据上下文实例化操作模块并完成推理；中间输出与反馈再交回设计器，决定下一阶段流程。由此，后续步骤能够响应已经得到的结果，操作的具体参数也不必始终固定。 **主要结论：** 在社会推理、生物医学、数学和代码生成评测中，论文报告相对所列基线的 Pass@k 改善，并展示跨领域、跨执行模型的迁移表现。Pass@k 衡量多次尝试中至少一次成功的概率，不能把它直接写成单次执行准确率的同等提升。
+  - Intro (EN): DyFlow separates design from execution. A designer specifies stage-level subgoals and operations; an executor instantiates context-aware operators and returns intermediate outputs and feedback, which guide the next stage. Thus later workflow steps depend on observed progress, and operator parameters can vary with context. **Findings:** Social reasoning, biomedical, mathematics, and coding evaluations report improved Pass@k against the listed baselines, with cross-domain and cross-executor transfer. Pass@k measures success within multiple attempts and should not be presented as an equivalent gain in single-run accuracy.
 
-### 对初学者的配置建议（本清单建议，不是论文统一标准）
+  [![dyflow：原论文 Figure 2](https://arxiv.org/html/2509.26062v1/framework.png)](https://proceedings.neurips.cc/paper_files/paper/2025/hash/fe9910d2b03324faeb5371a9658277bb-Abstract-Conference.html)
 
-- **先做 3 个，再做 5 或 6 个**。3 个用于调通消息机制；比较密度、环与全连接时，4–6 个更有结构差异。研究无向环时尤其注意：3 个节点的环就是完全图。
-- **先用一个固定版本的模型**。本地可以尝试 7B/8B 指令模型；如果目标任务几乎全错，再调整任务或换 14B/32B 等更强模型。参数量并不单独决定推理、纠错和工具能力。
-- **模型必须先具备一定单体解题能力**。多个都不会解题的实例，不能保证通过交流获得正确解法。
-- **多个智能体可以共用同一份模型权重或同一个 API 服务**，每个智能体保留独立提示词和历史。N 个智能体不要求 N 份权重常驻显存；并发会增加 KV cache、上下文和吞吐需求。
-- **最后再做异构模型**。先隔离拓扑效果，再考虑强弱模型分别放在哪个位置。
+- [[2026-AAAI]](https://ojs.aaai.org/index.php/AAAI/article/view/40182) **Cost-Effective Communication: An Auction-based Method for Language Agent Interaction** [PDF](https://arxiv.org/pdf/2511.13193v2) [🐙 Code](https://github.com/waltstephen/Cost-Effective-Communication)
+  - 简介（中文）：DALA 把有限通信预算分配建模为拍卖：actor 引导候选消息生成，critic 估计信息价值，再以价值与 token 长度形成的价值密度出价，由预算约束下的 VCG 拍卖分配发言机会。成员可发送全文、摘要、关键词或保持沉默，训练同时考虑任务回报和通信成本。它按当前信息的价值动态控制谁发言、发多少，调整的是实际发生的通信，而非逐条生成任意智能体连接。 **主要结论：** 七个推理基准中取得较强效果并降低通信消耗；行为分析观察到成员会根据价值和预算主动保持沉默，支持“筛选高价值消息”而非默认人人发言。
+  - Intro (EN): DALA allocates a limited communication budget through an auction. An actor guides candidate-message generation, a critic estimates utility, and value density relative to token length supplies bids for a budget-constrained VCG auction. Agents can send full messages, summaries, keywords, or remain silent; training considers both task reward and communication cost. The method dynamically controls speaking rights and message volume, rather than freely generating arbitrary agent-to-agent edges. **Findings:** Across seven reasoning benchmarks, results combine strong performance with lower communication use; behavioral analysis finds value- and budget-dependent silence, supporting selective communication over mandatory participation.
 
-### 成本不要只数智能体
+  [![auction：原论文 Figure 1](assets/dala-framework.png)](https://ojs.aaai.org/index.php/AAAI/article/view/40182)
 
-若每个智能体每轮调用一次模型，N 个智能体、R 轮的主体生成调用约为 N×R；还需另计设计器、汇总者、重试和工具调用。
+- [[2026-arXiv]](https://arxiv.org/abs/2602.03688) **TodyComm: Task-Oriented Dynamic Communication for Multi-Round LLM-based Multi-Agent System** [PDF](https://arxiv.org/pdf/2602.03688)
+  - 简介（中文）：用循环网络编码智能体历轮行为和交互信息，在每一轮重新决定通信连接，并学习哪些成员的输出应该进入最终决策。训练以任务效用为奖励，构图同时考虑无环性与节点通信预算。它直接研究执行中的行为变化怎样驱动下一轮连接调整。 **主要结论：** 五个基准中，在恶意成员随轮次变化及通信预算受限的设置下取得更好的任务表现与 token 效率，支持用当前行为更新连接，而不是一直沿用最初的可靠性判断。
+  - Intro (EN): TodyComm encodes agents’ interaction histories with recurrent networks and updates communication graphs across rounds, including connections used for the final decision. Policies are trained with task utility while graph construction respects structural and degree constraints. The method targets behavior-driven adaptation under changing reliability and communication budgets. **Findings:** Across five benchmarks with changing adversaries and communication constraints, results improve task performance and token efficiency, supporting behavior-driven updates as agent reliability changes.
 
-若每条有向边每轮各传递一条消息，全连接的有向消息关系是 N(N−1)：5 个节点为 20，10 个为 90。这不等于 API 调用数；同伴消息可能被合并进一次调用，但会增加输入 token。历史保留策略还会影响跨轮成本。
+  [![tody：原论文 Figure 1](https://arxiv.org/html/2602.03688v2/ours_framework_compressed.png)](https://arxiv.org/abs/2602.03688)
 
-<a id="roadmap"></a>
-## 阅读与复现实践路线
+- [[2026-arXiv]](https://arxiv.org/abs/2602.17100) **AgentConductor: Topology Evolution for Multi-Agent Competition-Level Code Generation** [PDF](https://arxiv.org/pdf/2602.17100)
+  - 简介（中文）：针对代码生成训练一个编排智能体：先根据题目难度确定角色和分层有向无环图的连接密度，再利用代码执行反馈迭代修订拓扑。训练结合监督微调与强化学习，使编排者学习性能和通信成本之间的取舍。它把任务开始前的结构生成与同一道题执行中的结构演化结合起来。 **主要结论：** 在三项竞赛代码和两项基础代码数据集上取得较强结果，并减少连接密度与 token 消耗；难度适配和执行反馈共同帮助压缩冗余协作。
+  - Intro (EN): AgentConductor trains an orchestrator to infer task difficulty, assign roles, and construct density-aware layered DAGs for code generation. Execution feedback supports iterative topology revision within the same problem. Supervised initialization and reinforcement learning train the orchestrator to balance coding performance with communication cost. **Findings:** Evaluations on three competition-level and two foundational coding datasets report stronger performance with lower topology density and token usage, supporting difficulty adaptation and execution feedback.
 
-### 第一遍：先读六篇
+  [![conductor：原论文 Figure 3](https://arxiv.org/html/2602.17100v1/topoweaver-main.png)](https://arxiv.org/abs/2602.17100)
 
-Multiagent Debate → Sparse MAD → GPTSwarm → AgentPrune → G-Designer → MacNet。
+- [[2026-arXiv]](https://arxiv.org/abs/2602.06039) **DyTopo: Dynamic Topology Routing for Multi-Agent Reasoning via Semantic Matching** [PDF](https://arxiv.org/pdf/2602.06039)
+  - 简介（中文）：DyTopo 针对不同推理阶段需要不同信息的问题，在每轮开始时重建稀疏有向通信图。管理者给出本轮目标，各成员生成自然语言的“需要什么信息”和“能提供什么信息”描述；将这些描述编码后做语义匹配，决定定向消息通路，再沿新图交流并继续推理。它通过需求与供给匹配路由，而非每轮把所有完整回答广播给所有成员。 **主要结论：** 在代码生成与数学推理、四种底座模型的评测中，作者报告相对所比较最强基线的平均表现提升；图随轮次变化的轨迹也提供了观察分工调整的线索。这支持阶段相关路由的价值，但不构成任何任务上稀疏动态图都优于固定图的保证。
+  - Intro (EN): DyTopo rebuilds a sparse directed communication graph each reasoning round. A manager sets the round goal; agents produce natural-language descriptors of information they need and can offer. Embedding-based semantic matching determines directed routes for private messages before reasoning continues. Routing follows information demand and supply instead of broadcasting every full response. **Findings:** Code-generation and mathematics evaluations across four backbones report average gains over the strongest compared baseline. Evolving graphs expose changes in coordination, supporting stage-dependent routing without establishing universal superiority of sparse dynamic graphs.
 
-Self-Consistency 作为基础对照插入；MAST 与预算匹配论文在开始报告性能结果前补读。
+  [![dytopo：原论文 Figure 2](https://arxiv.org/html/2602.06039v1/Framework.svg)](https://arxiv.org/abs/2602.06039)
 
-### 第一项实践：机制复现
+- [[2026-arXiv]](https://arxiv.org/abs/2607.28527) **MANTA: Multi-Agent Network Topology Adaptation for Self-Evolving Multi-Agent Systems** [PDF](https://arxiv.org/pdf/2607.28527) [🐙 Code](https://github.com/mao-code/MANTA)
+  - 简介（中文）：MANTA 先依据题目与历史结构经验设计团队，执行一轮后由轨迹审计器检查协作过程中的异常，而不直接判断答案正确性。控制器据此决定结束，或允许一次受预算约束的结构修复，再运行最后一轮；修复可涉及成员、角色、连接和信息可见性。短期 playbook 记录当前任务的结构与审计结果，长期 playbook 积累跨任务的设计经验，将运行时修复与后续任务的结构选择联系起来。 **主要结论：** 五个基准的平均分为 74.0，比最强对照高 5.8 个百分点，并在 PlanCraft 上取得最佳结果；这是跨任务平均收益，不表示每个基准都排名第一。
+  - Intro (EN): MANTA plans a query-conditioned team using structural experience, then audits process anomalies after a collaboration turn without directly judging answer correctness. A controller either finalizes the answer or permits one bounded structural repair followed by a final turn. Repairs can change participants, roles, links, and information visibility. A short-term playbook records the current run, while a long-term playbook accumulates design lessons across tasks, connecting runtime repair with future topology selection. **Findings:** Across five benchmarks, the average score is 74.0, 5.8 percentage points above the strongest baseline, with the best PlanCraft result; the aggregate lead does not imply winning every benchmark.
 
-目标：用同一个模型、同一批带标准答案的问题，对比独立作答投票、全连接辩论和稀疏辩论。
+  [![manta：原论文 Figure 2](assets/manta-framework.png)](https://arxiv.org/abs/2607.28527)
 
-1. 用 3 个逻辑智能体调通消息历史，保存每轮输入输出。
-2. 换成 4 或 6 个智能体，比较环与全连接；都先独立回答，再交流。
-3. 先固定轮数和每次输出上限，记录质量与实际 token；再补充总预算匹配的比较。相同轮数并不等于相同 token。
-4. 从小规模试运行开始；正式结论增加独立题目和重复运行，报告不确定性。
-5. 标注正确改错、错误改对、盲目一致等轨迹，解释为什么一张图更好。
+- [[2026-ICML]](https://icml.cc/virtual/2026/poster/65930) **AOrchestra: Automating Sub-Agent Creation for Agentic Orchestration** [PDF](https://arxiv.org/pdf/2602.03786v2) [🐙 Code](https://github.com/FoundationAgents/AOrchestra)
+  - 简介（中文）：AOrchestra 把子智能体统一表示为“指令、上下文、工具、模型”四元组。中心编排者在每一步根据当前任务进度选择这四项，按需创建执行者、委派子任务，再接收结果继续决策；因此成员数量、能力配置和上下文分配可以随执行变化。整体仍是中心编排式委派，不等于学习任意成员之间的通信边。 **主要结论：** 在 GAIA、SWE-Bench-Verified 和 Terminal-Bench-2 的实验中，配合 Gemini-3-Flash，相对所比较最强基线的平均提升为 16.28%；不同模型配置还呈现可调的效果与成本折中，支持按需实例化子智能体在长程任务中的价值。
+  - Intro (EN): AOrchestra represents a sub-agent as an instruction, context, tools, and model tuple. At each step, a central orchestrator selects these components, creates an executor on demand, delegates work, and uses returned results for further decisions. Participation, capabilities, and context allocation can change during execution, while orchestration remains centralized rather than learning arbitrary peer-to-peer edges. **Findings:** With Gemini-3-Flash, GAIA, SWE-Bench-Verified, and Terminal-Bench-2 experiments report a 16.28% average relative improvement over the strongest compared baseline. Model choices also provide a controllable performance–cost trade-off.
 
-这是理解 Sparse MAD 的简化实验；若更换了模型、数据或提示词，应称为机制复现或迁移验证，不能宣称复现了原论文分数。
-
-### 第二项实践：优化已有图
-
-先尝试随机删边或逐条删边，在验证集比较；把它作为学习练习和对照，再复现 AgentPrune 的学习与剪枝方法。测试集保持独立。
-
-### 第三项实践：学习生成图
-
-补齐文本 embedding、有向图与邻接矩阵、GCN、VAE/VGAE 和策略梯度，再读 G-Designer 代码。分别复现图生成、任务执行、任务反馈训练，检查每个模块是否改变了实际消息可见性。
-
-G-Designer 的学习重点是：一个较小的设计器根据任务生成图，执行模型负责答题；训练设计器与训练执行模型是两件事。
-
-### 第四项实践：扩展到动态协作
-
-读 DyLAN、TodyComm，研究运行中选择参与者、通信对象或停止轮次。和固定图、按题生成图、主管按需调用三类对照比较，计入调度开销。
-
-<a id="template"></a>
-## 以后如何添加论文
-
-每篇保留如下信息；没有查证的地方写“未核对”，不要补猜测值。
-
-```text
-标题 / 作者 / arXiv 首发年份 / 正式会议年份：
-论文链接 / 作者代码链接：
-主类 I/II/III/IV（按结构决定的时机；可标跨类）：
-节点、边与轮次分别代表什么：
-拓扑何时变化：
-优化对象与算法：
-节点数（是否包含主管、汇总者、工具节点）：
-执行模型及精确版本 / 已公开参数量：
-设计器模型 / 是否训练执行模型：
-任务、数据划分与重复次数：
-公平对照 / 输入、输出及思考 token / 延迟：
-论文实际支持的结论：
-限制与想验证的问题：
-阅读状态 / 复现状态：
-```
-
-维护原则：正式出版信息优先；预印本单独标注；代码链接只表示作者提供，不表示本清单已运行验证。不能从某一种架构被称为“动态”就推断其逐轮改边，也不能从更多智能体提升正确率就直接推断存在等预算的协作收益。
+  [![aorchestra：原论文 Figure 3](https://arxiv.org/html/2602.03786v2/introduction.png)](https://icml.cc/virtual/2026/poster/65930)
