@@ -1,4 +1,13 @@
-# Paper List for LLM Multi-Agent Communication Topology
+# Paper List for Multi-Agent Communication Topology
+
+大模型多智能体通信与拓扑论文清单。
+
+### 目录 · Contents
+
+- [I. 人工预设结构 · 拓扑设计](#i-人工预设结构--拓扑设计)
+- [II. 提前优化、之后复用 · 拓扑优化](#ii-提前优化之后复用--拓扑优化)
+- [III. 根据当前题目生成 · 任务自适应拓扑](#iii-根据当前题目生成--任务自适应拓扑)
+- [IV. 根据执行反馈调整 · 动态拓扑](#iv-根据执行反馈调整--动态拓扑)
 
 ## I. 人工预设结构 · 拓扑设计
 
