@@ -28,8 +28,6 @@
 
 ## A. 通信拓扑
 
-按新题执行时结构的确定方式分类：A2 复用已优化的结构，A3 按题生成或选择结构，A4 根据执行中的信息调整结构；生成器是否提前训练不作为主分类标准。
-
 ### A1. 人工预设的通信结构
 
 - [[2023-EMNLP]](https://aclanthology.org/2023.emnlp-main.936/) **Exchange-of-Thought: Enhancing Large Language Model Capabilities through Cross-Model Communication** [PDF](https://arxiv.org/pdf/2312.01823v1) [🐙 Code](https://github.com/yinzhangyue/EoT)
@@ -61,6 +59,11 @@
   - 简介（中文）：MoA 利用不同模型答案中的互补信息，建立固定分层结构：首层并行提出答案，后续层读取上一层全部回答，批判性综合成新答案，末层输出最终结果，无需训练模型。 **主要结论：** AlpacaEval 2.0 的同一汇总器、两层配置下，六个不同模型提供答案的长度控制胜率为 61.3%，同一模型采样六次为 56.7%；生成式综合也优于从候选中直接选一条。模型作为提案者和汇总者的排名不同，说明收益与答案多样性、综合能力及角色匹配有关，不能仅按单模型分数选成员。
 
   [![moa：原论文 Figure 2](https://arxiv.org/html/2406.04692v1/mom.svg)](https://proceedings.iclr.cc/paper_files/paper/2025/hash/5434be94e82c54327bb9dcaf7fca52b6-Abstract-Conference.html)
+
+- [[2025-ICML]](https://proceedings.mlr.press/v267/yi25c.html) **From Debate to Equilibrium: Belief-Driven Multi-Agent LLM Reasoning via Bayesian Nash Equilibrium** [PDF](https://raw.githubusercontent.com/mlresearch/v267/main/assets/yi25c/yi25c.pdf) [🐙 Code](https://github.com/tmlr-group/ECON)
+  - 简介（中文）：ECON 针对反复交换完整推理会放大冗余与协调成本的问题，采用固定的协调者—执行者结构：协调者提供策略与输出格式，执行者独立作答，再由协调者汇总。它额外学习个体信念网络及共享信念编码、价值混合网络，通过调节采样温度与重复惩罚促进隐式协调，而非学习通信边。 **主要结论：** 数学任务成本对比中，相对三轮辩论平均减少约 21.4% token；扩大执行者数量到四个以上后收益有限，部分设置下降。异构执行模型也未必更好，论文中其协调更困难、表现弱于同构配置；这里的贝叶斯纳什均衡分析依赖论文规定的建模假设。
+
+  [![econ：原论文 Figure 2](assets/econ-figure.png)](https://proceedings.mlr.press/v267/yi25c.html)
 
 ### A2. 离线优化后复用的通信结构
 
@@ -126,6 +129,11 @@
 
   [![conductor2：原论文 Figure 2](assets/conductor2-figure.png)](https://proceedings.iclr.cc/paper_files/paper/2026/hash/dbb8193ad7e6fcbc7bb62ed9ee835110-Abstract-Conference.html)
 
+- [[2026-WWW]](https://doi.org/10.1145/3774904.3792537) **OFA-MAS: One-for-All Multi-Agent System Topology Design based on Mixture-of-Experts Graph Generative Models** [PDF](https://arxiv.org/pdf/2601.12996) [🐙 Code](https://github.com/Shiy-Li/OFA-MAS)
+  - 简介（中文）：OFA-MAS 针对每个任务域单独训练拓扑生成器、难以共享结构知识的问题，用统一角色池和一个条件自回归生成器，逐步选角色、预测入边。图编码持续注入题目信息，混合专家预测头按任务组合不同生成策略；训练依次学习无条件图结构、LLM 合成的题目—图对应关系，再用实际验证的图微调。 **主要结论：** 六基准平均成绩中，仅合成数据预训练版为 92.15%，完整微调版为 93.02%；移除任务感知编码、混合专家或预训练阶段均有损失。未见 GAIA 上仍有迁移收益，但实验未启用工具调用，不能与完整工具型代理系统直接比较。
+
+  [![ofa：原论文 Figure 2](assets/ofa-figure.png)](https://doi.org/10.1145/3774904.3792537)
+
 - [[2026-arXiv]](https://arxiv.org/abs/2605.17359) **Learning Transferable Topology Priors for Multi-Agent LLM Collaboration Across Domains** [PDF](https://arxiv.org/pdf/2605.17359)
   - 简介（中文）：TopoPrior 为减少跨领域从零搜图的成本，从多领域“题目—参考图”学习条件变分图先验，并用领域对抗约束减少潜空间的域差异；新题先生成初始图，再交给既有拓扑优化方法继续处理。 **主要结论：** 移除先验学习、领域对齐或题目条件均降低表现，其中先验学习影响最大；简化的教师图仍有帮助，随机图监督则效果较差。论文报告的 token 节省统计在线推理，未包含离线参考图构造成本；其贡献是更好的起点，而非完全替代后续搜索。
 
@@ -188,6 +196,11 @@
 
   [![card：原论文 Figure 2](https://arxiv.org/html/2603.01089v1/main_figure.png)](https://arxiv.org/abs/2603.01089)
 
+- [[2026-ICLR]](https://proceedings.iclr.cc/paper_files/paper/2026/hash/43833a8a514392cb19ca09b52cf4b5b7-Abstract-Conference.html) **Stochastic Self-Organization in Multi-Agent Systems** [PDF](https://proceedings.iclr.cc/paper_files/paper/2026/file/43833a8a514392cb19ca09b52cf4b5b7-Paper-Conference.pdf) [🐙 Code](https://github.com/tnurbek/selforg)
+  - 简介（中文）：SELFORG 针对同一成员在不同轮次可能表现不同的问题，先让成员独立回答，再用回答嵌入与群体平均嵌入的余弦相似度近似贡献分数；按语义相似度筛边，让较高分成员向较低分成员传话，构成 DAG，并在新回答产生后重建图。最终按贡献加权的语义中心选择回答。 **主要结论：** 动态重建相较固定初始图，在消融中使 GSM8K 和 MMLU 分别提高 0.6、1.4 个百分点，增益存在但较温和；增加成员也带来更高 token 与延迟。贡献分数衡量群体语义一致性，并不直接检验答案正确性，不能理解为无需验证就能识别正确专家。
+
+  [![stoch：原论文 Figure 1](assets/stoch-figure.png)](https://proceedings.iclr.cc/paper_files/paper/2026/hash/43833a8a514392cb19ca09b52cf4b5b7-Abstract-Conference.html)
+
 - [[2026-ICML]](https://icml.cc/virtual/2026/poster/66333) **AgentConductor: Topology Evolution for Multi-Agent Competition-Level Code Generation** [PDF](https://arxiv.org/pdf/2602.17100)
   - 简介（中文）：AgentConductor 针对代码任务难度不同、执行中又会暴露新错误的问题，训练一个编排模型：先把题目生成分层 DAG，执行成员任务和沙箱测试，再把已有图、成员回复及错误反馈交给编排模型，决定下一轮如何改图。训练先用监督微调学习有效 YAML 图格式和基本编排，再用 GRPO 联合优化格式正确性、代码执行结果与图复杂度。**主要结论：** 消融显示，格式奖励主要影响能否生成可执行的图，执行奖励主要影响解题成功率，复杂度约束则调节协作成本；小模型缺少监督预热时尤其难以输出有效结构。因此，性能提升依赖“能正确编排—能根据执行结果修正—能控制开销”这条链路，而非单纯增加成员或追求更稀疏的图。
 
@@ -239,6 +252,16 @@
 
   [![extagents：原论文 Figure 3](assets/extagents-figure.png)](https://aclanthology.org/2026.acl-long.468/)
 
+- [[2026-Findings of ACL]](https://aclanthology.org/2026.findings-acl.1600/) **Free-MAD: Consensus-Free Multi-Agent Debate** [PDF](https://aclanthology.org/2026.findings-acl.1600.pdf) [🐙 Code（论文致谢实现）](https://github.com/jonathansantilli/freemad)
+  - 简介（中文）：Free-MAD 针对最终轮投票会丢掉早期正确意见的问题，将全部轮次纳入决策：记录初始答案、坚持与改口，对旧答案扣分、对新答案加分，并随轮次衰减权重，最后选择累计分最高的答案。辩论可使用反从众提示，也可保留常规从众模式，无需等所有成员达成共识。 **主要结论：** 四变体对照支持跨轮评分机制本身有贡献；一轮方案可达到或超过所比两轮基线的准确率。反从众并非总更好：较弱模型在数学任务中可能固守错误，知识不足时适度采纳他人意见反而有效。因此应区分“保留推理历史”和“一律坚持己见”。
+
+  [![freemad：原论文 Figure 2](assets/freemad-figure.png)](https://aclanthology.org/2026.findings-acl.1600/)
+
+- [[2026-ICML]](https://icml.cc/virtual/2026/poster/60749) **MOC: Multi-Order Communication in LLM-based Multi-Agent Systems** [PDF](https://arxiv.org/pdf/2606.02359) [🐙 Code](https://github.com/yao-guan/MOC)
+  - 简介（中文）：MOC 针对逐跳转述会遗漏远端原始证据的问题，在已有 DAG 上让接收者直接收集 K 跳祖先的回答，按最短跳数去重、按拓扑顺序组织。为控制冗余，再反复选择语义最相近的消息对，用 LLM 合并并保留原有先后关系，直到满足消息数量和长度预算。 **主要结论：** 多跳收集相对只读直接前驱通常提高推理成绩，但三跳不总优于两跳；合并能降低未经压缩的多跳通信开销，在较大团队中也可低于原始基线。成本下降并不普遍：DeepSeek-V3.2 设置的输入 token 仍增加约 17%–22%，说明保留远端证据的收益需要与额外读取、合并成本一起衡量。
+
+  [![moc：原论文 Figure 2](assets/moc-figure.png)](https://icml.cc/virtual/2026/poster/60749)
+
 ### B3. 消息生成与表达
 
 - [[2026-ICLR]](https://proceedings.iclr.cc/paper_files/paper/2026/hash/a1c1bb8d4cc0fc2bcb5fcb61163008df-Abstract-Conference.html) **Context Learning for Multi-Agent Discussion** [PDF](https://proceedings.iclr.cc/paper_files/paper/2026/file/a1c1bb8d4cc0fc2bcb5fcb61163008df-Paper-Conference.pdf) [🐙 Code](https://github.com/HansenHua/M2CL-ICLR26)
@@ -250,6 +273,11 @@
   - 简介（中文）：OPTiMACS 研究同一条消息该用自然语言、代码、公式还是结构化格式表达。系统结合消息内容与收发双方职责识别任务类型，再以任务成功奖励学习格式选择策略；探索期间允许发现新任务类别和新格式，而不是只在预设 JSON 等选项中挑选。 **主要结论：** 数学协作与多跳问答实验中，学习的策略整体优于自然语言及固定格式；表 2 没有一种固定格式在所有数据集都最好。token 在 GSM+、WikiHop、HotpotQA 上下降，但 NarrativeQA 上增加 19.3%。因此它改善的是按任务选择表达方式的能力，不能概括为结构化消息总比自然语言好或总更省 token。
 
   [![message：原论文 Figure 3](assets/message-figure.png)](https://aclanthology.org/2026.findings-acl.1441/)
+
+- [[2026-ICML]](https://icml.cc/virtual/2026/poster/61557) **When LLMs Develop Languages: Symbolic Communication for Efficient Multi-Agent Reasoning** [PDF](https://arxiv.org/pdf/2606.29354) [🐙 Code](https://github.com/pzqpzq/LSF_MDia)
+  - 简介（中文）：针对自然语言消息冗长、每次任务都要重新组织表达的问题，本文把符号词典、组合语法和推理规则封装成可复用的 LSF 卡片。冻结的 LLM 群体在训练题上提出、批评和变异这些卡片，按正确率与生成 token 效率筛选；执行新题时，路由器选择单个卡片，或让多个卡片并行投票、跨轮交流。 **主要结论：** 扩大演化群体和增加演化轮次能改善所得符号协议，但收益逐渐饱和；多轮组合还需权衡准确率与生成长度。论文的主要效率指标统计各轮输出 token，并非全部输入输出成本；扩大的群体主要用于离线寻找协议，不能直接解释为测试时成员越多越好。
+
+  [![symbolic：原论文 Figure 1](assets/symbolic-figure.png)](https://icml.cc/virtual/2026/poster/61557)
 
 ### B4. 潜在状态与缓存通信
 
@@ -292,6 +320,16 @@
   - 简介（中文）：CondenseFlow 针对传递完整 KV 缓存会随上下文和轮数膨胀的问题，用可学习探针通过交叉注意力把各层缓存聚合成固定数量的槽位；训练时匹配压缩前后的注意力输出，并约束覆盖度和探针差异。下一成员把压缩结果作为 KV 前缀，新一轮替换旧前缀而非无限追加。 **主要结论：** Qwen3-14B 的实验中，64 槽位保留了接近完整缓存的平均准确率，通信缓存占用降低超过 99%；压到 16 槽位则在多轮测试中明显退化。固定大小约束的是传递缓存，并不意味着整个系统的计算或总通信量不再随轮数增长。
 
   [![condense：原论文 Figure 2](assets/condense-figure.png)](https://aclanthology.org/2026.findings-acl.669/)
+
+- [[2026-ICML]](https://icml.cc/virtual/2026/poster/63256) **Dual Latent Memory for Visual Multi-agent System** [PDF](https://arxiv.org/pdf/2602.00471)
+  - 简介（中文）：L²-VMAS 针对视觉智能体把感知细节与推理过程混成文字传递、协作加深反而丢失信息的问题，分别维护潜在感知记忆和潜在推理记忆：前者保留多粒度视觉表示，后者压缩并合并推理片段；生成熵升高时才触发记忆访问，选择所需类型并注入当前推理。底座模型冻结，训练外部记忆模块。 **主要结论：** 分类型消融中，感知记忆更有利于感知任务，推理记忆更有利于思考任务，混合任务以两者结合最好；所测文字通信基线随轮次增加会退化，双记忆方案能维持更好的扩展表现。结果说明传递的信息类型和调用时机都重要，不能只比较拓扑形状。
+
+  [![dualmem：原论文 Figure 4](assets/dualmem-figure.png)](https://icml.cc/virtual/2026/poster/63256)
+
+- [[2026-ICML]](https://icml.cc/virtual/2026/poster/66638) **RelayCaching: Accelerating LLM Collaboration via Decoding KV Cache Reuse** [PDF](https://arxiv.org/pdf/2603.13289) [🐙 Code](https://github.com/YingshengGeng/RelayCaching)
+  - 简介（中文）：RelayCaching 针对下游成员重新读取上游输出时重复计算 KV、而直接复用又受前缀变化影响的问题，先在校准数据上定位偏差集中的模型层，再在运行时结合偏差大小、注意力影响和末尾位置，仅重算关键层中的部分 token，其余复用上游解码缓存，无需训练。 **主要结论：** 所测数学、知识和代码任务中，多数配置复用超过 80% KV，同时保持接近完整预填充的成绩；效率实验中第五个成员的首 token 延迟加速达 4.71 倍。该加速来自 Qwen3-0.6B 的特定配置，既不是整项任务加速，也不表示不同底座模型间可以直接通用地交换缓存。
+
+  [![relaycache：原论文 Figure 5](assets/relaycache-figure.png)](https://icml.cc/virtual/2026/poster/66638)
 
 ## C. 协作记忆
 
@@ -356,6 +394,11 @@
 
   [![legomem：原论文 Figure 1(a)](https://arxiv.org/html/2510.04851v1/lego_framework_overall_work.png)](https://www.microsoft.com/en-us/research/publication/legomem-modular-procedural-memory-for-multi-agent-llm-systems-for-workflow-automation/)
 
+- [[2026-ICML]](https://icml.cc/virtual/2026/poster/65274) **E-mem: Multi-Agent Based Episodic Context Reconstruction for LLM Agent Memory** [PDF](https://arxiv.org/pdf/2601.21714) [🐙 Code](https://github.com/dog-last/E-mem)
+  - 简介（中文）：E-mem 针对把历史对话压成摘要会丢掉时间、指代和多跳证据的问题，将带重叠的原始片段分配给多个记忆助手，摘要仅辅助定位。主智能体融合摘要、实体关键词和语义检索三路结果，激活相关助手在各自完整片段内推理；助手返回带时间信息的证据，主智能体整合后可继续追问。 **主要结论：** 长对话与多文档问答中，这种局部推理再汇总的方式优于所比检索基线；模型消融显示，更强助手对多跳问题的帮助比单跳问题明显。固定检索预算的片段实验也显示块越大并非越好，但该消融只用 LoCoMo 的一段对话，不能据此认定通用最佳块大小。
+
+  [![emem：原论文 Figure 2](assets/emem-figure.png)](https://icml.cc/virtual/2026/poster/65274)
+
 ## D. 组队与执行编排
 
 ### D1. 角色与成员选择
@@ -369,6 +412,11 @@
   - 简介（中文）：AgentVerse 把协作组织为专家招募、共同决策、行动执行和结果评估四个阶段：招募器根据任务生成角色，评估未通过时再调整团队组成；成员通过预设的平级讨论或主执行者—评审者协议交换意见。它的自适应主要体现在成员与职责调整，通信协议并非自由学习出的任意图。**主要结论：** 多成员协作的收益明显依赖基础模型处理反馈的能力：GPT-3.5 的 Group 设置在三项推理任务中的两项不及 Solo，而错误的成员反馈是失败来源之一；GPT-4 在相应实验中更能利用协作。论文因此不仅展示团队可随反馈调整，也说明增加讨论可能放大错误，不能假定招募更多专家就必然提高性能。
 
   [![agentverse：原论文 Figure 1](https://arxiv.org/html/2308.10848v3/pipeline.png)](https://proceedings.iclr.cc/paper_files/paper/2024/hash/578e65cdee35d00c708d4c64bce32971-Abstract-Conference.html)
+
+- [[2024-IJCAI]](https://www.ijcai.org/proceedings/2024/3) **AutoAgents: A Framework for Automatic Agent Generation** [PDF](https://www.ijcai.org/proceedings/2024/0003.pdf) [🐙 Code](https://github.com/OWD-AI/AutoAgents)
+  - 简介（中文）：AutoAgents 针对手工设定角色难以覆盖不同任务所需专长的问题，先让规划者按题生成角色提示、职责、工具与步骤，再由成员观察者检查角色的缺漏、冗余，由计划观察者检查步骤是否匹配。执行时由动作观察者分配工作、检查结果和调整计划，成员可独立改进或共同讨论。 **主要结论：** 在 GPT-4 的开放问答和知识融入写作实验中优于所比单模型与团队基线；二十例写作消融中，移除观察者或自我改进均使正确知识覆盖率从 90% 降至 87%。这支持生成团队后的检查与改进有价值，但小样本消融不能证明角色越多或团队结构越复杂越好。
+
+  [![autoagents：原论文 Figure 2](assets/autoagents-figure.png)](https://www.ijcai.org/proceedings/2024/3)
 
 - [[2025-ICLR]](https://arxiv.org/abs/2410.02189) **Agent-Oriented Planning in Multi-Agent Systems** [PDF](https://arxiv.org/pdf/2410.02189) [🐙 Code](https://github.com/lalaliat/Agent-Oriented-Planning)
   - 简介（中文）：AOP 针对“任务拆得出来，却未必有成员能完成”的问题，先结合题目和成员能力描述生成子任务与分配方案，再用提前训练的奖励模型预测各成员的完成质量，避免让所有成员逐一试做；低分任务被重新分配、补充描述或进一步拆分，检查器同时补齐遗漏、删除重复并检查依赖。已完成任务还会更新各成员的代表性经验库。**主要结论：** 消融中，移除检查器明显增加分解不完整的问题；移除奖励模型或代表性经验也降低表现，支持同时检验“谁能做”和“任务是否拆全”。这里主要优化当前题目的执行计划，反馈库则跨任务积累，因此更接近任务自适应规划，而非根据本轮真实执行错误持续重连通信图。
@@ -411,6 +459,11 @@
   - 简介（中文）：GraphPlanner 针对一次性选模型难以处理多步任务的问题，将每步动作设为“模型＋角色”，在规划者、执行者与总结者之间动态路由。它把历史任务轨迹与当前执行过程组织为图，通过角色节点传递历史经验，再用强化学习权衡最终任务质量和调用成本；每次实际回答都会更新当前图。 **主要结论：** 消融表明，历史图记忆和区分节点关系的图编码均有贡献；允许生成工作流比只在固定工作流中换模型更有利于数学和代码任务，对识别类任务的收益较小。更强效果伴随额外调用与记忆开销，不能概括为对所有路由基线都更便宜。
 
   [![graphplanner：原论文 Figure 2](assets/graphplanner-figure.png)](https://proceedings.iclr.cc/paper_files/paper/2026/hash/c86ed90b14e55f2ecf838a755e404b06-Abstract-Conference.html)
+
+- [[2026-ICML]](https://icml.cc/virtual/2026/poster/61537) **HieraMAS: Optimizing Intra-Node LLM Mixtures and Inter-Node Topology for Multi-Agent Systems** [PDF](https://arxiv.org/pdf/2602.20229) [🐙 Code](https://github.com/tianyao-aka/HieraMAS)
+  - 简介（中文）：HieraMAS 针对“角色选什么模型”和“角色之间如何连接”相互影响的问题，把每个角色做成多个异构提议模型加一个综合模型的超级节点。先训练按题选择节点内模型的选择器，再冻结它，训练图评分器从候选拓扑中选出适合当前题目的图；节点内提议—综合结构本身固定，选择器也可跳过成员。 **主要结论：** 去掉图评分器后，MATH、MMLU 分别下降 3.45、3.36 个百分点；全部使用较强模型会显著增加成本，却不保证更高准确率。分析中跳过角色并不常见，节省更多来自较稀疏的连接。因此它优化的是模型配置与图结构的配合，而非单独寻找一种通用最优图。
+
+  [![hieramas：原论文 Figure 2](assets/hieramas-figure.png)](https://icml.cc/virtual/2026/poster/61537)
 
 ### D3. 工作流组织与搜索
 
@@ -489,6 +542,16 @@
 
   [![aorchestra：原论文 Figure 3](https://arxiv.org/html/2602.03786v2/introduction.png)](https://icml.cc/virtual/2026/poster/65930)
 
+- [[2026-ICML]](https://icml.cc/virtual/2026/poster/66164) **OMAC: A Holistic Optimization Framework for LLM-Based Multi-Agent Collaboration** [PDF](https://arxiv.org/pdf/2505.11765) [🐙 Code](https://github.com/xiwenchao/OMAC)
+  - 简介（中文）：OMAC 针对只优化提示词或通信边、其他协作环节仍受限的问题，把优化对象扩展到个体功能、成员生成、按题组队、运行中参与决策和消息路由。它先生成候选智能体及控制器提示，在训练任务上执行并评分，再对比高低分配置以提出修改；多维优化采用交替改进，而非每次同时重写所有组件。 **主要结论：** 单维优化中，增强个体功能往往已有较大收益；组合多个维度还能进一步改善所测任务，而同时修改全部维度更不稳定。这里提前优化的是组件与决策规则，控制器执行时仍可调整参与者和通信，不能等同于预先学好一张固定图。
+
+  [![omac：原论文 Figure 3](assets/omac-figure.png)](https://icml.cc/virtual/2026/poster/66164)
+
+- [[2026-ICML]](https://icml.cc/virtual/2026/poster/62216) **EvoMAS: Evolutionary Generation of Multi-Agent Systems** [PDF](https://arxiv.org/pdf/2602.06511) [🐙 Code](https://github.com/amazon-science/EvoMAS)
+  - 简介（中文）：EvoMAS 针对直接生成整套代理代码容易产生不可执行配置的问题，搜索结构化的角色、提示、工具、模型和拓扑配置。每题从已有池检索起点，实际执行候选，以 LLM 评审结合 token、延迟代价评分；变异只改一种组件，交叉继承一个父代的图并组合成员属性，演化记录供后续题目检索。 **主要结论：** 在 BBEH-Mini 和 WorkBench 上，三轮演化优于五轮，说明搜索越深并非越好；初始配置质量显著影响结果，异构模型按角色分配也可优于统一使用一个更大模型。每题演化本身需要额外执行与评审，最佳配置的答题成绩应与搜索开销区分。
+
+  [![evomas：原论文 Figure 1](assets/evomas-figure.png)](https://icml.cc/virtual/2026/poster/62216)
+
 ### D4. 运行框架与异步调度
 
 - [[2024-arXiv]](https://arxiv.org/abs/2402.14034) **AgentScope: A Flexible yet Robust Multi-Agent Platform** [PDF](https://arxiv.org/pdf/2402.14034) [🐙 Code](https://github.com/agentscope-ai/agentscope)
@@ -521,6 +584,11 @@
 
   [![stop：原论文 Figure 2](assets/stop-figure.png)](https://proceedings.iclr.cc/paper_files/paper/2026/hash/b86a195e70f27017c514fa0e5f80595f-Abstract-Conference.html)
 
+- [[2026-ICML]](https://icml.cc/virtual/2026/poster/62000) **ScaleSim: Serving Large-Scale Multi-Agent Simulation with Invocation Distance-Based Memory Management** [PDF](https://arxiv.org/pdf/2601.21473) [🐙 Code](https://github.com/PanZaifeng/KVFlow)
+  - 简介（中文）：ScaleSim 针对大规模模拟中多数成员暂时不调用 LLM、按最近使用时间淘汰显存会反复搬运的问题，让应用提供每个成员距离下次调用的相对距离，可由动作剩余时间、预计相遇时间或传播图跳数估计。后端据此预取即将活跃成员的 KV 缓存或 LoRA，并优先淘汰较晚才使用的状态。 **主要结论：** Qwen2.5-7B、单 H100、限制驻留容量的三类模拟中，相对 SGLang 的最高端到端加速分别为 1.73、1.31、1.74 倍。收益来自稀疏激活下减少搬运等待，依赖应用能提供有用的调用距离；这项工作改进的是运行调度，不是成员的认知记忆或答题准确率。
+
+  [![scalesim：原论文 Figure 7](assets/scalesim-figure.png)](https://icml.cc/virtual/2026/poster/62000)
+
 ## E. 协作规律与评估
 
 ### E1. 协作收益与规模规律
@@ -549,6 +617,16 @@
   - 简介（中文）：论文从理论上区分“把输入分给更多成员”和“真的减少串行推理”这两件事。在硬注意力 Transformer、输入分块的设定下，将内部生成与成员通信统一为计算图，分析成员数、计算深度与通信预算，并为检索、状态跟踪、多跳推理构造协议。 **主要结论：** 简单检索可以扩展可处理的上下文而只需常数量级通信；可结合的状态跟踪能通过并行归约降低深度，但通信随成员数增加；多跳推理在最坏情形仍受依赖链限制，增加成员不能消除逐跳计算。Llama 8B、70B 的合成任务实验总体支持这些区别。因此是否值得组网取决于任务的可分解性与依赖结构，不能从这套有条件的理论推出通用最优拓扑。
 
   [![benefits：原论文 Figure 1](assets/communication-tradeoffs.png)](https://proceedings.iclr.cc/paper_files/paper/2026/hash/e9372abc370b8302459abdce4bdce5a5-Abstract-Conference.html)
+
+- [[2026-ICML]](https://icml.cc/virtual/2026/poster/60576) **More Capable, Less Cooperative? When LLMs Fail at Zero-Cost Collaboration** [PDF](https://arxiv.org/pdf/2604.07821)
+  - 简介（中文）：本文将十个智能体放入信息交换任务：完成任务需要他人持有的信息，发送者保留原信息、分享没有个人代价，所有成员被要求最大化群体收益。通过分别自动代发请求、自动满足请求，实验拆分执行能力与分享行为，避免把所有失败归因于推理能力不足。 **主要结论：** 八个模型的通用能力排名与群体成绩没有显著相关；部分模型在自动获得信息后接近理想策略，却在他人请求信息时仍不充分分享。具体操作指令与分享奖励能缓解不同瓶颈，隐藏同伴进度则有好有坏。这里的“零成本”指环境规则不向发送者计费，并非真实 API 通信免费。
+
+  [![lesscoop：原论文 Figure 2](assets/lesscoop-figure.png)](https://icml.cc/virtual/2026/poster/60576)
+
+- [[2026-ICML]](https://icml.cc/virtual/2026/poster/63358) **Multi-Agent Teams Hold Experts Back** [PDF](https://arxiv.org/pdf/2602.01011) [🐙 Code](https://github.com/apappu97/multi-agent-teams-hold-experts-back)
+  - 简介（中文）：本文检验团队能否利用成员专长，而不只比较是否超过平均成员。实验在排序任务中控制专家知识的分布，并在推理基准中按题识别回答正确的成员；比较不告知专家、明确告知专家，以及理想采纳正确答案的上界。 **主要结论：** 告知专家身份仍不能消除收益缺口；排序任务中从二人扩至八人反而加重专家意见被稀释的现象。对话分析发现，折中整合与较差成绩相关，但没有证明其由对齐训练导致。推理基准的团队有时超过最强固定单模型，仍低于“每题至少一人正确”的上界，不能概括为所有团队必然不如单模型。
+
+  [![experts：原论文 Figure 1](assets/experts-figure.png)](https://icml.cc/virtual/2026/poster/63358)
 
 ### E2. 协作能力基准
 
@@ -582,6 +660,11 @@
 
   [![agentweb：原论文 Figure 1](assets/agentweb-figure.png)](https://icml.cc/virtual/2026/poster/63068)
 
+- [[2026-ICML]](https://icml.cc/virtual/2026/poster/65129) **ProtocolBench: Which LLM MultiAgent Protocol to Choose?** [PDF](https://arxiv.org/pdf/2510.17149) [🐙 Code](https://github.com/ulab-uiuc/AgentProtocols)
+  - 简介（中文）：ProtocolBench 针对通信协议的影响常被模型、提示和运行环境混杂的问题，固定这些因素及场景拓扑，用薄适配层保留 A2A、ACP、ANP、Agora 各自的重试和流式行为，统一记录任务质量、时延、消息开销与故障恢复。另设 ProtocolRouter，先筛除不满足约束的协议，再按需求和历史表现为场景或模块选型。 **主要结论：** 所测 GAIA 文档协作中 A2A 的任务表现最好，流式队列中 ACP 的平均延迟和波动更低，没有协议全面占优。路由器是低频选择与组合机制，结果依赖所测实现、版本及工作负载，不能解释为协议名称本身决定模型推理能力。
+
+  [![protocol：原论文 Figure 1](assets/protocol-figure.png)](https://icml.cc/virtual/2026/poster/65129)
+
 ### E3. 过程诊断与失败归因
 
 - [[2025-ICML]](https://proceedings.mlr.press/v267/zhang25cq.html) **Which Agent Causes Task Failures and When? On Automated Failure Attribution of LLM Multi-Agent Systems** [PDF](https://raw.githubusercontent.com/mlresearch/v267/main/assets/zhang25cq/zhang25cq.pdf) [🐙 Code](https://github.com/mingyin1/Agents_Failure_Attribution)
@@ -603,3 +686,8 @@
   - 简介（中文）：TraceElephant 针对仅凭成员输出难以判断它当时是否收到足够信息的问题，记录每步完整输入、输出、工具交互及系统配置，并保留可重跑环境；数据包含 380 条轨迹，其中 220 条失败，覆盖 Captain-Agent、Magentic-One 和单智能体工具框架 SWE-Agent。 **主要结论：** 表 3 中，交互式归因器读取完整记录时，成员与步骤准确率为 66%、30%；同时去掉输入和元数据后降至 54%、17%。重跑候选步骤进行反事实检查还能改善步骤定位。因此可观测性本身影响归因质量，不能把缺少关键输入的日志上的错误全部归结为分析模型推理不足。
 
   [![elephant：原论文 Figure 2](assets/elephant-figure.png)](https://aclanthology.org/2026.acl-long.912/)
+
+- [[2026-ICML]](https://icml.cc/virtual/2026/poster/63666) **MAS-ProVe: Understanding the Process Verification of Multi-Agent Systems** [PDF](https://arxiv.org/pdf/2602.03053) [🐙 Code](https://github.com/Wang-ML-Lab/MAS-ProVe)
+  - 简介（中文）：MAS-ProVe 针对多智能体中间过程怎样验证缺少系统比较的问题，在六种框架中插入统一搜索接口：每步或每轮生成三个候选，由奖励模型、过程奖励模型或 LLM 评审选择继续路径，并改变评审看到的历史范围。 **主要结论：** 没有统一最优的验证粒度：AFlow、ADAS 更受益于逐成员验证，Debate 等更适合整轮验证，DyLAN 的偏好还随任务变化。长历史的数学推理常受益于摘要，但 GAIA 信息提取可能因细节丢失而受损。验证不是免费增益；多候选生成与评分增加计算，这项研究主要提供评估规律。
+
+  [![masprove：原论文 Figure 1](assets/masprove-figure.png)](https://icml.cc/virtual/2026/poster/63666)
