@@ -264,6 +264,11 @@
 
 ### B3. 消息生成与表达
 
+- [[2024-Findings of EMNLP]](https://aclanthology.org/2024.findings-emnlp.623/) **Beyond Natural Language: LLMs Leveraging Alternative Formats for Enhanced Reasoning and Communication** [PDF](https://aclanthology.org/2024.findings-emnlp.623.pdf) [🐙 Code](https://github.com/thunlp/AutoForm)
+  - 简介（中文）：针对自然语言交流冗长、固定表达格式又未必适合不同任务的问题，AutoForm 通过提示让模型自行选择并使用 JSON、表格、列表或符号表达，无需训练模型。在多智能体实验中，两个成员分别持有部分资料，轮流交换信息以完成多跳或长文问答。 **主要结论：** 由 GPT-4 先发言的主实验中，AutoForm 在维持或提高答题表现的同时，将所统计的通信 token 减少 9.4%–72.7%；其中 HotpotQA 的 GPT-4/GPT-3.5 组合由平均 345.5 降至 94.3。但附录中改由 GPT-3.5 先发言时，过度简写与幻觉可能使答题表现下降。因此收益依赖模型选择和理解表达格式的能力，压缩后的消息仍须保留解题信息。
+
+  [![altformats：原论文 Figure 2](assets/altformats-figure.png)](https://aclanthology.org/2024.findings-emnlp.623/)
+
 - [[2026-ICLR]](https://proceedings.iclr.cc/paper_files/paper/2026/hash/a1c1bb8d4cc0fc2bcb5fcb61163008df-Abstract-Conference.html) **Context Learning for Multi-Agent Discussion** [PDF](https://proceedings.iclr.cc/paper_files/paper/2026/file/a1c1bb8d4cc0fc2bcb5fcb61163008df-Paper-Conference.pdf) [🐙 Code](https://github.com/HansenHua/M2CL-ICLR26)
   - 简介（中文）：M2CL 针对成员各有视角却缺少吸收他人意见的指导、又可能过早趋同的问题，先从提示池选择互补的初始上下文，再学习逐轮上下文生成器，结合题目、初始指令与上一轮讨论调整协作指令。优化同时约束偏离初始视角的程度、促进跨轮表征一致，并自适应调节两者权重。 **主要结论：** 消融中，初始视角选择、逐轮更新和权重调节均有贡献；允许改动过小会难以协调，过大会让答案同质化。4–64 个成员的实验显示，增加成员带来的收益最终饱和；关键是保留互补视角的同时学会整合讨论，不是单纯追求一致。
 
@@ -290,6 +295,11 @@
   - 简介（中文）：ThoughtComm 针对文本交流难以传递模型内部推理信息的问题，用带 Jacobian 稀疏约束的自编码器，从各成员回复末尾的隐藏状态中提取潜在因子；按因子与成员的依赖关系筛选、加权，再通过可训练前缀适配器注入下一轮生成。底层 LLM 保持冻结，文本回复仍参与迭代，新增的是内部表示层面的协作通道。 **主要结论：** 三个智能体、两轮交流的数学实验中，多数配置优于论文的 Multiagent Finetuning 基线，例如 Qwen3-1.7B 的 MATH 准确率从 75.8% 升至 93.0%；但 Llama3-8B 的 GSM8K 共识率提高时，准确率反而从 69.2% 降至 68.4%。因此潜在因子交流可以改善推理，但共识增加并不保证答案更正确。
 
   [![thoughtcomm：原论文 Figure 2](https://arxiv.org/html/2510.20733v1/figures/framework.png)](https://proceedings.neurips.cc/paper_files/paper/2025/hash/b2b502c3629beadda06311386d2c6f73-Abstract-Conference.html)
+
+- [[2025-NeurIPS]](https://proceedings.neurips.cc/paper_files/paper/2025/hash/1a074a28c3a6f2056562d00649ae6416-Abstract-Conference.html) **KVCOMM: Online Cross-context KV-cache Communication for Efficient LLM-based Multi-agent Systems** [PDF](https://proceedings.neurips.cc/paper_files/paper/2025/file/1a074a28c3a6f2056562d00649ae6416-Paper-Conference.pdf) [🐙 Code](https://github.com/FastMAS/KVCOMM)
+  - 简介（中文）：Ye 等提出的 KVCOMM 针对多个成员重复预填充相同文本的开销：同一段文字在不同前文下的 KV 缓存并不相同，因此先对齐位置编码，再用在线积累的锚点插值估计共享文本及相邻前缀的缓存偏移；没有合适锚点时执行完整预填充，并将结果加入锚点池。 **主要结论：** 在 MMLU、GSM8K 与 HumanEval 的 2–5 成员实验中，答题表现接近完整预填充基线；五成员 Llama-3.1-8B 配置下，第五个成员的首 token 延迟由 428.6 ms 降至 54.8 ms，约加速 7.82 倍。消融显示，位置对齐和两类缓存偏移均影响准确率。该速度是单成员首 token 指标，方法不加速后续解码；验证范围为使用同一模型权重的成员。
+
+  [![kvcommneurips：原论文 Figure 3](https://arxiv.org/html/2510.12872v1/Fig3.png)](https://proceedings.neurips.cc/paper_files/paper/2025/hash/1a074a28c3a6f2056562d00649ae6416-Abstract-Conference.html)
 
 - [[2026-ICLR]](https://proceedings.iclr.cc/paper_files/paper/2026/hash/474ada926b331d78f06d95e8913111cc-Abstract-Conference.html) **Cache-to-Cache: Direct Semantic Communication Between Large Language Models** [PDF](https://proceedings.iclr.cc/paper_files/paper/2026/file/474ada926b331d78f06d95e8913111cc-Paper-Conference.pdf) [🐙 Code](https://github.com/thu-nics/C2C)
   - 简介（中文）：C2C 针对模型间“先生成文本、再重新编码”造成的信息损失与延迟，让两个模型并行编码同一输入，直接融合 KV cache。方法先对齐 token 与网络层，再用残差融合器、输入相关权重和逐层门控，将发送方表示注入接收方；两个 LLM 冻结，仅训练融合模块。 **主要结论：** 以 Qwen3-0.6B 为接收方、搭配三种发送模型的四基准实验中，相比文本通信，平均准确率分别提高 5.36、4.15、3.06 个百分点。消融显示，直接用投影后的外部缓存覆盖原缓存效果很差，保留自身信息的残差融合明显改善，再加门控进一步提高均分。因此关键是学习怎样整合两种表示，而非简单复制缓存；主要证据来自模型两两通信，尚不能直接推广为任意多轮智能体网络。
@@ -334,6 +344,11 @@
 ## C. 协作记忆
 
 ### C1. 共享工作区与跨轮状态
+
+- [[2023-UIST]](https://doi.org/10.1145/3586183.3606763) **Generative Agents: Interactive Simulacra of Human Behavior** [PDF](https://arxiv.org/pdf/2304.03442) [🐙 Code](https://github.com/joonspk-research/generative_agents)
+  - 简介（中文）：为让成员在持续互动中记住经历、形成判断并协调行动，该工作在 Smallville 中构建 25 个基于 GPT-3.5 的智能体：每个成员独立保存观察、对话、计划与反思，按相关性、近期性和重要性检索记忆，再据此规划行动；反思将具体经历归纳为更高层认识并写回记忆。成员通过对话传播信息，记忆本身并非全员共享。 **主要结论：** 100 人参与的访谈回答评估中，完整架构的行为可信度高于逐步屏蔽反思、计划及观察记忆的三个消融版本；两天模拟中，派对消息的知情者由 1 人增至 13 人，12 位受邀者中有 5 位实际到场。这说明记忆与反思可支撑跨轮信息传播和社会协调，但检索遗漏、计划未执行仍会造成失败；实验评估的是行为可信度与社会交互。
+
+  [![generative：原论文 Figure 5](https://arxiv.org/html/2304.03442v2/figures/figure_architecture2.png)](https://doi.org/10.1145/3586183.3606763)
 
 - [[2025-arXiv]](https://arxiv.org/abs/2507.01701) **Exploring Advanced LLM Multi-Agent Systems Based on Blackboard Architecture** [PDF](https://arxiv.org/pdf/2507.01701) [🐙 Code](https://github.com/bc200/LbMAS)
   - 简介（中文）：LbMAS 将全部协作放到黑板上：按问题生成专家角色，控制器根据当前板上内容选择执行者；规划、批评、冲突解决和清理角色持续修改共享状态，决策角色判断能否结束。它省去各成员分别维护完整对话的做法，并允许删除无用消息。 **主要结论：** 六个基准的平均成绩领先所比较的静态系统，但并非每项都优于较强单模型。移除控制器后，MATH 准确率近乎不变，token 却由约 472 万增至 1,386 万；停用消息删除也使所测三项成绩下降。因此黑板的收益同时依赖参与者调度与内容清理，不能只归因于扩大信息共享。
