@@ -296,6 +296,11 @@
 
   [![activations：原论文 Figure 1](https://arxiv.org/html/2501.14082v2/overview.png)](https://proceedings.mlr.press/v267/ramesh25a.html)
 
+- [[2025-EMNLP]](https://aclanthology.org/2025.emnlp-main.518/) **Augmenting Multi-Agent Communication with State Delta Trajectory** [PDF](https://aclanthology.org/2025.emnlp-main.518.pdf) [🐙 Code](https://github.com/LittleDinoC/StateDelta/)
+  - 简介：SDE 针对自然语言消息难以携带生成过程中的隐藏信息，同时直接传递原始隐藏状态可能混入发送者上下文的问题，在相同底座模型的成员之间同时发送文本和逐 token 的状态差分。发送者计算相邻 token 在选定层的隐藏向量之差，接收者读取消息时，将差分加到对应位置的隐藏状态；注入层先在独立数据集上筛选，再固定用于后续任务。 **主要结论：** 在两个 Qwen2.5-7B 成员、三轮辩论的 College Mathematics 实验中，准确率由纯文本通信的 36.17% 升至 44.33%；直接加原始状态为 40.33%，支持差分设计的作用。修改全部层反而明显退步，增加成员数也未持续改善结果。该方法需要访问模型内部状态，并增加通信带宽，不能直接用于仅开放文本 API 的模型。
+
+  [![sde：原论文 Figure 1](assets/sde-figure.png)](https://aclanthology.org/2025.emnlp-main.518/)
+
 - [[2025-NeurIPS]](https://proceedings.neurips.cc/paper_files/paper/2025/hash/b2b502c3629beadda06311386d2c6f73-Abstract-Conference.html) **Thought Communication in Multiagent Collaboration** [PDF](https://proceedings.neurips.cc/paper_files/paper/2025/file/b2b502c3629beadda06311386d2c6f73-Paper-Conference.pdf)
   - 简介：ThoughtComm 针对文本交流难以传递模型内部推理信息的问题，用带 Jacobian 稀疏约束的自编码器，从各成员回复末尾的隐藏状态中提取潜在因子；按因子与成员的依赖关系筛选、加权，再通过可训练前缀适配器注入下一轮生成。底层 LLM 保持冻结，文本回复仍参与迭代，新增的是内部表示层面的协作通道。 **主要结论：** 三个智能体、两轮交流的数学实验中，多数配置优于论文的 Multiagent Finetuning 基线，例如 Qwen3-1.7B 的 MATH 准确率从 75.8% 升至 93.0%；但 Llama3-8B 的 GSM8K 共识率提高时，准确率反而从 69.2% 降至 68.4%。因此潜在因子交流可以改善推理，但共识增加并不保证答案更正确。
 
@@ -532,6 +537,11 @@
 
   [![capo：原论文 Figure 2](assets/capo-figure.png)](https://proceedings.iclr.cc/paper_files/paper/2025/hash/b07091c16719ad3990e3d1ccee6641f1-Abstract-Conference.html)
 
+- [[2025-ICLR]](https://proceedings.iclr.cc/paper_files/paper/2025/hash/e01c431bbb83153632c0dcfaf8ccda0a-Abstract-Conference.html) **MindSearch: Mimicking Human Minds Elicits Deep AI Searcher** [PDF](https://proceedings.iclr.cc/paper_files/paper/2025/file/e01c431bbb83153632c0dcfaf8ccda0a-Paper-Conference.pdf) [🐙 Code](https://github.com/InternLM/MindSearch)
+  - 简介：MindSearch 针对复杂问题一次检索不全、网页内容挤占上下文的问题，将工作分给 WebPlanner 和多个 WebSearcher。规划者通过生成代码逐步构造子问题依赖图，根据检索反馈增加节点；无依赖冲突的子任务并行执行。检索者先改写查询、合并搜索结果，再选择网页阅读全文并返回摘要；同时接收原始问题和父节点结果，保留任务目标与前置证据。 **主要结论：** 闭集问答表中，InternLM2.5-7B 的平均成绩由 ReAct Search 的 42.9 提高到 49.2。固定检索者后，HotpotQA 的规划消融为 ReAct 58.0、CodeAct 61.3、图式规划 64.0；去掉网页筛选则降至 58.0，说明规划与证据筛选共同贡献收益。其图主要表达检索任务的依赖与执行顺序，归入工作流编排。
+
+  [![mindsearch：原论文 Figure 1](assets/mindsearch-figure.png)](https://proceedings.iclr.cc/paper_files/paper/2025/hash/e01c431bbb83153632c0dcfaf8ccda0a-Abstract-Conference.html)
+
 - [[2025-arXiv]](https://arxiv.org/abs/2506.12508) **AgentOrchestra: Orchestrating Multi-Agent Intelligence with the Tool-Environment-Agent(TEA) Protocol** [PDF](https://arxiv.org/pdf/2506.12508v6) [🐙 Code](https://github.com/SkyworkAI/DeepResearchAgent)
   - 简介：AgentOrchestra 针对工具、环境和智能体缺乏统一管理的问题，用 TEA 协议为三者规定注册、上下文、生命周期与版本接口；中心规划者通过统一调用接口调度检索、浏览、分析和工具生成成员，根据执行反馈重新规划，并复用演化后的组件。 **主要结论：** 2026 年修订版的 GAIA 累积消融中，规划者加入研究成员后均分从 36.54% 升至 57.14%，再加入浏览成员升至 72.76%；在研究、浏览、分析已齐备时，工具生成成员又使得分从 79.07% 升至 89.04%。这支持不同执行能力互补，但累积消融不能完全分离每个模块的独立贡献。数学与科学题部分仅使用分析成员，其收益主要来自提示和解题经验演化，不能一并归功于多智能体拓扑。
 
@@ -638,6 +648,11 @@
 
   [![persuasive：原论文 Figure 2](assets/persuasive-figure.png)](https://proceedings.mlr.press/v235/khan24a.html)
 
+- [[2024-NeurIPS]](https://proceedings.neurips.cc/paper_files/paper/2024/hash/51173cf34c5faac9796a47dc2fdd3a71-Abstract-Conference.html) **Are More LLM Calls All You Need? Towards the Scaling Properties of Compound AI Systems** [PDF](https://proceedings.neurips.cc/paper_files/paper/2024/file/51173cf34c5faac9796a47dc2fdd3a71-Paper-Conference.pdf) [🐙 Code](https://github.com/lchen001/CompoundAIScalingLaws)
+  - 简介：本文研究增加推理调用何时有益，分析两种基础聚合方式：Vote 对独立采样的答案投票；Filter-Vote 先让模型筛去疑似错误答案，再投票。作者按正确答案是否比任何单个错误答案更可能出现来刻画题目难度，在二选一、两种难度混合的简化设置中推导性能变化条件，再拟合更一般的规模预测模型。 **主要结论：** GPT-3.5 在 MMLU Physics、TruthfulQA、GPQA 和 AVeriTeC 上的结果表明，调用次数与准确率不一定单调对应；更多样本既能巩固正确多数，也能让高概率错误更稳定地胜出，两类题混合后可出现先升后降。过滤也不总优于直接投票。它为协作系统提供调用预算的基础对照，但没有验证任意通信拓扑或开放式生成任务的规模规律。
+
+  [![llmcalls：原论文 Figure 1](assets/llmcalls-figure.png)](https://proceedings.neurips.cc/paper_files/paper/2024/hash/51173cf34c5faac9796a47dc2fdd3a71-Abstract-Conference.html)
+
 - [[2025-Findings of ACL]](https://aclanthology.org/2025.findings-acl.606/) **Voting or Consensus? Decision-Making in Multi-Agent Debate** [PDF](https://aclanthology.org/2025.findings-acl.606.pdf) [🐙 Code](https://github.com/lkaesberg/decision-protocols)
   - 简介：该论文针对不同辩论工作同时改变提示、轮数与决策方式、难以解释收益的问题，在相同骨干模型和专家配置下比较四种投票与三种共识规则，并单独改变成员数、轮数和消息交互。 **主要结论：** 所测知识任务总体更适合共识，推理任务更适合保留多个候选再投票；更多成员通常有益，延长投票前讨论却可能降低成绩。让成员先独立起草、或限制每轮交流以保留独立思考，比强制批判语气更可靠地提高答案多样性与表现。结果不支持一种决策协议通吃，且辩论相对单模型 CoT 的 token 开销显著增加。
 
@@ -657,6 +672,11 @@
   - 简介：这项比较研究把协调协议与角色自主性分开：中心协调者派工、固定顺序下自主选角色、先广播意向再行动、依据共享历史独立行动，并测试规模、任务复杂度与成员扰动。 **主要结论：** 在相同配置的协议比较中，读取前序已完成产物的 Sequential 优于中心派工与完全自主方案；三个模型的 L3 任务复测支持其相对中心派工的优势。但自由选角色对不同模型的影响可相反，扩大人数也未持续提高质量。结果来自论文构造的任务与模型评审；研究比较的是协调协议与角色自主性，不能把角色变化等同于学得通信图。
 
   [![selforg：原论文 Figure 1](https://arxiv.org/html/2603.28990v1/figures/fig5_protocols.png)](https://arxiv.org/abs/2603.28990)
+
+- [[2026-TMLR]](https://openreview.net/forum?id=K6WwK8URlV) **Rethinking Mixture-of-Agents: Is Mixing Different Large Language Models Beneficial?** [PDF](https://arxiv.org/pdf/2502.00674v1) [🐙 Repo（仅 README）](https://github.com/wenzhe-li/Self-MoA)
+  - 简介：Self-MoA 检验多模型集成的收益是否必须来自模型之间的差异：保持聚合器和提示模板一致，将不同模型各自作答改为从表现较强的同一模型反复采样，再生成综合答案；进一步改变模型组合与采样温度，分析候选质量与多样性的关系。 **主要结论：** AlpacaEval 2.0 中，同用 Qwen1.5-110B 聚合六份答案时，WizardLM 的六次采样使长度控制胜率由混合六模型的 59.1% 提高到 65.7%。但在不预知题目所属领域的混合任务上，最佳异构组合为 60.04%，略高于固定单一提议模型的 59.69%；因此不能把结果理解为异构团队总是无益。顺序版本 Self-MoA-Seq 用滑动窗口逐批综合，能缓解上下文限制，但样本从 6 增至 30 时，性能仍非单调上升。
+
+  [![selfmoa：原论文 Figure 1](assets/selfmoa-figure.png)](https://openreview.net/forum?id=K6WwK8URlV)
 
 - [[2026-ICLR]](https://proceedings.iclr.cc/paper_files/paper/2026/hash/e9372abc370b8302459abdce4bdce5a5-Abstract-Conference.html) **Benefits and Limitations of Communication in Multi-Agent Reasoning** [PDF](https://arxiv.org/pdf/2510.13903v2) [🐙 Code](https://github.com/michaelrizvi/coa-algorithmic)
   - 简介：论文从理论上区分“把输入分给更多成员”和“真的减少串行推理”这两件事。在硬注意力 Transformer、输入分块的设定下，将内部生成与成员通信统一为计算图，分析成员数、计算深度与通信预算，并为检索、状态跟踪、多跳推理构造协议。 **主要结论：** 简单检索可以扩展可处理的上下文而只需常数量级通信；可结合的状态跟踪能通过并行归约降低深度，但通信随成员数增加；多跳推理在最坏情形仍受依赖链限制，增加成员不能消除逐跳计算。Llama 8B、70B 的合成任务实验总体支持这些区别。因此是否值得组网取决于任务的可分解性与依赖结构，不能从这套有条件的理论推出通用最优拓扑。
