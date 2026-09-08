@@ -25,6 +25,11 @@
   - [E1. 协作收益与规模规律](#e1-协作收益与规模规律)
   - [E2. 协作能力基准](#e2-协作能力基准)
   - [E3. 过程诊断与失败归因](#e3-过程诊断与失败归因)
+- [F. 社会网络模拟与网络生成](#f-社会网络模拟与网络生成)
+  - [F1. 社会关系形成与网络演化](#f1-社会关系形成与网络演化)
+  - [F2. 网络上的信息传播与群体行为](#f2-网络上的信息传播与群体行为)
+  - [F3. 社会模拟平台与环境](#f3-社会模拟平台与环境)
+  - [F4. 人—智能体混合网络与群体互动](#f4-人智能体混合网络与群体互动)
 
 ## A. 通信拓扑
 
@@ -355,10 +360,7 @@
 
 ### C1. 共享工作区与跨轮状态
 
-- [[2023-UIST]](https://doi.org/10.1145/3586183.3606763) **Generative Agents: Interactive Simulacra of Human Behavior** [PDF](https://arxiv.org/pdf/2304.03442) [🐙 Code](https://github.com/joonspk-research/generative_agents)
-  - 简介：为让成员在持续互动中记住经历、形成判断并协调行动，该工作在 Smallville 中构建 25 个基于 GPT-3.5 的智能体：每个成员独立保存观察、对话、计划与反思，按相关性、近期性和重要性检索记忆，再据此规划行动；反思将具体经历归纳为更高层认识并写回记忆。成员通过对话传播信息，记忆本身并非全员共享。 **主要结论：** 100 人参与的访谈回答评估中，完整架构的行为可信度高于逐步屏蔽反思、计划及观察记忆的三个消融版本；两天模拟中，派对消息的知情者由 1 人增至 13 人，12 位受邀者中有 5 位实际到场。这说明记忆与反思可支撑跨轮信息传播和社会协调，但检索遗漏、计划未执行仍会造成失败；实验评估的是行为可信度与社会交互。
-
-  [![generative：原论文 Figure 5](https://arxiv.org/html/2304.03442v2/figures/figure_architecture2.png)](https://doi.org/10.1145/3586183.3606763)
+相关社会模拟工作：[Generative Agents](#f3-社会模拟平台与环境) 采用成员私有记忆与反思，完整条目见 F3。
 
 - [[2025-arXiv]](https://arxiv.org/abs/2507.01701) **Exploring Advanced LLM Multi-Agent Systems Based on Blackboard Architecture** [PDF](https://arxiv.org/pdf/2507.01701) [🐙 Code](https://github.com/bc200/LbMAS)
   - 简介：LbMAS 将全部协作放到黑板上：按问题生成专家角色，控制器根据当前板上内容选择执行者；规划、批评、冲突解决和清理角色持续修改共享状态，决策角色判断能否结束。它省去各成员分别维护完整对话的做法，并允许删除无用消息。 **主要结论：** 六个基准的平均成绩领先所比较的静态系统，但并非每项都优于较强单模型。移除控制器后，MATH 准确率近乎不变，token 却由约 472 万增至 1,386 万；停用消息删除也使所测三项成绩下降。因此黑板的收益同时依赖参与者调度与内容清理，不能只归因于扩大信息共享。
@@ -761,3 +763,123 @@
   - 简介：MAS-ProVe 针对多智能体中间过程怎样验证缺少系统比较的问题，在六种框架中插入统一搜索接口：每步或每轮生成三个候选，由奖励模型、过程奖励模型或 LLM 评审选择继续路径，并改变评审看到的历史范围。 **主要结论：** 没有统一最优的验证粒度：AFlow、ADAS 更受益于逐成员验证，Debate 等更适合整轮验证，DyLAN 的偏好还随任务变化。长历史的数学推理常受益于摘要，但 GAIA 信息提取可能因细节丢失而受损。验证不是免费增益；多候选生成与评分增加计算，这项研究主要提供评估规律。
 
   [![masprove：原论文 Figure 1](assets/masprove-figure.png)](https://icml.cc/virtual/2026/poster/63666)
+
+## F. 社会网络模拟与网络生成
+
+### F1. 社会关系形成与网络演化
+
+- [[2023-arXiv]](https://arxiv.org/abs/2312.06619) **Emergence of Scale-Free Networks in Social Interactions among Large Language Models** [PDF](https://arxiv.org/pdf/2312.06619)
+  - 简介：为检验 LLM 的局部交友决策能否形成复杂网络，作者让 GPT-3.5 智能体逐个加入：新成员读取已有成员的名字及可选的连接数量，选出固定数量的朋友，再更新无向图；实验同时改变是否展示度数、是否每轮重新随机分配名字。 **主要结论：** 展示度数且保留固定名字时，连接过度集中到少数枢纽；不展示度数但保留名字时，名字偏好仍能制造较宽的度分布。每轮重命名以削弱名字先验后，展示度数才产生接近线性优先连接的增长，而隐藏度数得到更接近随机的网络。因此，类似无标度的外形并不足以证明模型重现了人类交友机制，节点命名也会改变结果。
+
+  [![scale-free：原论文 Figure 2](https://arxiv.org/html/2312.06619v1/fig2.png)](https://arxiv.org/abs/2312.06619)
+
+- [[2025-ICWSM]](https://ojs.aaai.org/index.php/ICWSM/article/view/35820) **LLMs Generate Structurally Realistic Social Networks but Overestimate Political Homophily** [PDF](https://www-cs.stanford.edu/~jure/pubs/llms-social-networks-aaai25.pdf) [🐙 Code](https://github.com/snap-stanford/llm-social-network)
+  - 简介：论文将“生成的图像不像真实社交网络”与“生成关系时是否带入偏见”分开检验。给定 50 个人口属性画像，Global 一次生成全图，Local 逐人选择朋友，Sequential 逐人选择且能读取已形成的关系；再比较密度、聚类、连通性、度分布与不同属性上的同质性。 **主要结论：** 逐人生成的两种方法比一次生成全图更接近所比较的真实网络；但六种 LLM 都过度强调政治立场相同，明显高估政治同质性，加入兴趣描述也未消除这一偏差。这说明结构统计接近真实，不代表具体连边的社会属性同样可信。
+
+  [![political-homophily：原论文 Figure 1](assets/social-political-homophily.png)](https://ojs.aaai.org/index.php/ICWSM/article/view/35820)
+
+- [[2025-Social Network Analysis and Mining]](https://link.springer.com/article/10.1007/s13278-025-01535-7) **Homophily-induced emergence of biased structures in LLM-based multi-agent AI systems** [PDF](https://link.springer.com/content/pdf/10.1007/s13278-025-01535-7.pdf) [仓库（代码待发布）](https://github.com/AliakbarMehdizadeh/llm-network-homophily)
+  - 简介：为追踪个体选择怎样积累成群体分隔，作者从小型完全图开始，让新节点依次加入。每次随机展示部分已有节点，由 LLM 根据度数和一种社会属性选择固定数量的连接；分别改变模型、可见候选数及性别、年龄、政治取向等属性，测量属性同配性和度同配性。 **主要结论：** 所测四个模型的平均属性同配性均为正，但强弱不同；政治取向引发最强的同质连接，性别和教育相对较弱。同时，低度新节点仍倾向连接高度节点。因此社会属性偏好与结构上的优先连接可以同时存在，不能只用一个度分布概括生成机制；每组实验只考察一种社会属性。
+
+  [![homophily-growth：原论文 Figure 1](assets/social-homophily-growth.png)](https://link.springer.com/article/10.1007/s13278-025-01535-7)
+
+- [[2025-PNAS Nexus]](https://academic.oup.com/pnasnexus/article/4/12/pgaf317/8361967) **Network Formation and Dynamics among Multi-LLMs** [PDF](https://arxiv.org/pdf/2402.10659v7) [🐙 Code](https://github.com/papachristoumarios/llm-network-formation)
+  - 简介：论文把交友规则拆成可检验的机制：为每个 LLM 成员提供节点属性及度数、共同邻居或社区信息，让它选择新增连接，考察优先连接、三角闭合、同质性、社区与小世界性质，并将方法应用于真实网络的候选关系选择。 **主要结论：** 多种经典连接倾向能够在所设实验中出现，但会随模型、温度和社会情境变化；友谊情境偏向相似成员，职场情境也可能偏向角色互补。小世界实验从环形近邻网络出发、预先指定重连概率，再由 LLM 选重连对象，因此它验证的是受约束的网络形成能力，不能解释为智能体从零自主发现了小世界结构。
+
+  [![network-formation：原论文 Figure 4](https://arxiv.org/html/2402.10659v7/principle_5.png)](https://academic.oup.com/pnasnexus/article/4/12/pgaf317/8361967)
+
+- [[2026-arXiv]](https://arxiv.org/abs/2605.12898) **When Do LLMs Generate Realistic Social Networks? A Multi-Dimensional Study of Culture, Language, Scale, and Method** [PDF](https://arxiv.org/pdf/2605.12898)
+  - 简介：论文进一步检验网络生成结果是否依赖提示和模型配置：使用固定的 50 人画像，改变文化背景描述、提示语言、GPT-4.1 系列模型及生成方式，比较连通性、聚类、社区结构、同质性与实际边集合。 **主要结论：** 文化提示、语言和模型大小都会改变生成图；较大模型与较小模型之间的差异不只是同一张图上的随机噪声。某些配置能接近真实网络的聚类和模块度，却仍保留明显同质性偏差。因此报告“网络逼真”需要同时说明生成配置和评估指标；各文化条件沿用同一美国画像集合、每条件仅两个随机种子，尚不足以验证真实跨文化人群的关系形成。
+
+  [![network-realism：原论文 Figure 3](https://arxiv.org/html/2605.12898v1/figures/figure_5_6_structural_comparison_v2.png)](https://arxiv.org/abs/2605.12898)
+
+### F2. 网络上的信息传播与群体行为
+
+- [[2024-Findings of NAACL]](https://aclanthology.org/2024.findings-naacl.211/) **Simulating Opinion Dynamics with Networks of LLM-based Agents** [PDF](https://aclanthology.org/2024.findings-naacl.211.pdf) [🐙 Code](https://github.com/yunshiuan/llm-agent-opinion-dynamics)
+  - 简介：为让观点演化包含自然语言理由，论文给成员设置不同身份和初始立场，每步抽取一名发言者和一名接收者，后者阅读消息、更新自己的意见与记忆。实验改变确认偏误提示、累积或反思记忆，以及同一议题的真假表述，并设置不交流、只反复询问个人意见的对照。 **主要结论：** 默认成员会逐渐向符合事实的方向移动；不交流对照也出现该趋势，说明不能全部归因于社会说服。加入更强确认偏误后，最终意见更分散；对错误表述的否认通常强于对正确表述的认同。因此，模型自带倾向和提示措辞会塑造模拟社会，生成有逻辑的对话并不自动等于忠实重现人类极化。
+
+  [![opinion-dynamics：原论文 Figure 3](https://arxiv.org/html/2311.09618v4/agent_interact_schematic_fig.png)](https://aclanthology.org/2024.findings-naacl.211/)
+
+- [[2025-Findings of NAACL]](https://aclanthology.org/2025.findings-naacl.101/) **Biases in Opinion Dynamics in Multi-Agent Systems of Large Language Models: A Case Study on Funding Allocation** [PDF](https://aclanthology.org/2025.findings-naacl.101.pdf)
+  - 简介：论文研究没有唯一正确答案的资金分配讨论：18 个成员初始分别支持全额、部分或不资助某项目，随机两两交流 90 步。作者用 Llama 3-70B 和 Mistral-7B，分别测试自由写意见、只能从三种资助选项中选择，并改变初始意见比例、项目措辞及是否保留历史。 **主要结论：** 自由回答常出现折中分配倾向，但会受坚持零资助、质疑对方理由等行为影响；限定选项时更容易收敛到部分资助，加入历史后共识反而减少。讨论结果因表达空间和记忆而变化，不能把最终多数意见直接视为稳定的集体偏好，也不能把收敛本身当作决策质量提高。
+
+  [![funding-opinions：原论文 Figure 2](assets/social-funding-opinions.png)](https://aclanthology.org/2025.findings-naacl.101/)
+
+- [[2025-Science Advances]](https://doi.org/10.1126/sciadv.adu9368) **Emergent social conventions and collective bias in LLM populations** [PDF](https://www.lajello.com/papers/sciadv25emergent.pdf) [🐙 Code](https://github.com/Ariel-Flint-Ashery/AI-norms)
+  - 简介：作者用命名游戏检验局部交流能否形成全群体惯例：每步随机配对两个 LLM 成员，各自根据有限的个人交互记忆选择一个名称，同名获得正反馈、不同名获得负反馈；成员不知道全局分布，也没有统一领导者。反馈写入后续提示，并不更新 LLM 权重。 **主要结论：** 多个模型的群体能够自行收敛到共享名称；即使初始单体选择未显现明显偏好，反复互动也可能放大群体层面的偏向。再加入坚持另一名称的成员后，部分设置会发生惯例翻转，但所需比例随模型与名称组合显著变化。因此，局部选择、有限记忆与重复反馈可以产生集体规范，不能假定个体无偏就意味着群体无偏。
+
+  [![conventions：原论文 Figure 1](assets/social-conventions.png)](https://doi.org/10.1126/sciadv.adu9368)
+
+- [[2025-Findings of EMNLP]](https://aclanthology.org/2025.findings-emnlp.1262/) **Spiral of Silence in Large Language Model Agents** [PDF](https://aclanthology.org/2025.findings-emnlp.1262.pdf) [🐙 Code](https://github.com/aialt/SoS-LLMs)
+  - 简介：论文模拟 100 个成员依次评价同一电影，用“是否提供人物画像 × 是否展示此前平均分”的四组对照，区分身份设定与公共意见信号的作用；通过多数意见的时间趋势、末段评分的集中程度判断是否形成自我强化的趋同。 **主要结论：** 同时提供画像和历史均分时，多数意见逐渐增强；只给历史时更像被早期评分锚定，只给画像时意见保持较多差异。因此，个人设定并不能保证群体多样性，公共统计信息本身就可能促成从众。文中的“沉默螺旋”主要由评分趋同来操作化，没有直接测量成员因害怕孤立而拒绝发言。
+
+  [![spiral-silence：原论文 Figure 1](assets/social-spiral-silence.png)](https://aclanthology.org/2025.findings-emnlp.1262/)
+
+- [[2026-Findings of ACL]](https://aclanthology.org/2026.findings-acl.580/) **From Heard to Lived Opinions: Simulating Opinion Dynamics with Grounded LLM Agents in Economic Environments** [PDF](https://aclanthology.org/2026.findings-acl.580.pdf)
+  - 简介：为使观点来自亲身经历而不只来自别人的话，论文让 20 个 Llama-3.1-8B 家庭智能体作出劳动、消费与意见决策，同时与按规则运作的企业、政府交互；工资、物价、税收和补贴改变家庭处境，家庭再交换意见。作者追踪 150 步中的经济状态、情绪转移及群体意见分布。 **主要结论：** 所测模拟中，低收入与高收入家庭表现出不同劳动和消费选择；经济不平等与意见极化正相关，价格波动与群体意见分布变化相关。个体情绪改变频率却会在价格波动较大时降低，说明个体僵化和群体分布波动并不矛盾。这些是所设经济环境中的相关关系与行为合理性检验，尚非对真实社会因果效应的验证。
+
+  [![grounded-opinions：原论文 Figure 1](https://arxiv.org/html/2603.26701v1/simulation_structure.png)](https://aclanthology.org/2026.findings-acl.580/)
+
+### F3. 社会模拟平台与环境
+
+- [[2023-UIST]](https://doi.org/10.1145/3586183.3606763) **Generative Agents: Interactive Simulacra of Human Behavior** [PDF](https://arxiv.org/pdf/2304.03442) [🐙 Code](https://github.com/joonspk-research/generative_agents)
+  - 简介：为让成员在持续互动中记住经历、形成判断并协调行动，该工作在 Smallville 中构建 25 个基于 GPT-3.5 的智能体：每个成员独立保存观察、对话、计划与反思，按相关性、近期性和重要性检索记忆，再据此规划行动；反思将具体经历归纳为更高层认识并写回记忆。成员通过对话传播信息，记忆本身并非全员共享。 **主要结论：** 100 人参与的访谈回答评估中，完整架构的行为可信度高于逐步屏蔽反思、计划及观察记忆的三个消融版本；两天模拟中，派对消息的知情者由 1 人增至 13 人，12 位受邀者中有 5 位实际到场。这说明记忆与反思可支撑跨轮信息传播和社会协调，但检索遗漏、计划未执行仍会造成失败；实验评估的是行为可信度与社会交互。
+
+  [![generative：原论文 Figure 5](https://arxiv.org/html/2304.03442v2/figures/figure_architecture2.png)](https://doi.org/10.1145/3586183.3606763)
+
+- [[2025-arXiv]](https://arxiv.org/abs/2502.08691) **AgentSociety: Large-Scale Simulation of LLM-Driven Generative Agents Advances Understanding of Human Behaviors and Society** [PDF](https://arxiv.org/pdf/2502.08691v2) [🐙 Code（1.x）](https://github.com/tsinghua-fib-lab/AgentSociety/tree/main/packages/agentsociety)
+  - 简介：AgentSociety 为大规模持续互动提供共同环境：成员拥有需求、情绪、认知和行为决策模块，在城市空间、社交关系与经济系统中活动；运行引擎管理消息与并行执行，研究者可插入访谈、问卷和干预。论文展示万级成员以及多种社会实验场景。 **主要结论：** 枪支管制议题的模拟中，只接收同立场说服信息的组比自然讨论组更容易极化，接收反方信息的组则更容易趋于温和，说明信息暴露方式能够改变平台内的群体轨迹。但这些比例来自模拟成员，不能直接推断现实人群接受反方观点的效果；平台的价值在于把同一假设转成可重复、可干预的实验过程。
+
+  [![agentsociety：原论文 Figure 2](https://arxiv.org/html/2502.08691v2/research_overview_updated.png)](https://arxiv.org/abs/2502.08691)
+
+- [[2025-arXiv]](https://arxiv.org/abs/2504.10157) **SocioVerse: A World Model for Social Simulation Powered by LLM Agents and A Pool of 10 Million Real-World Users** [PDF](https://arxiv.org/pdf/2504.10157v3) [🐙 Code / Materials（部分发布）](https://github.com/FudanDISC/SocioVerse)
+  - 简介：SocioVerse 针对随机编造画像难以代表目标人群的问题，从真实用户资料池抽样并匹配人口分布；环境模块补充事件背景，用户模块提供画像和历史，场景模块定义问卷、访谈或多方互动，行为模块据此生成回答。论文以选举预测、新闻反馈和经济调查检验总体分布。 **主要结论：** 不同模型在三个场景中的排名不同；选举消融中，去掉用户知识和人口先验后，部分模型的州级预测误差明显上升，说明选样和背景信息也是模拟质量的重要来源。标题中的一千万指资料池规模，不是同时运行一千万 LLM；主要验证覆盖总体回答分布，尚不能据此认定已复现长期社交网络演化。
+
+  [![socioverse：原论文 Figure 2](https://arxiv.org/html/2504.10157v3/framework_V5.png)](https://arxiv.org/abs/2504.10157)
+
+- [[2025-Findings of ACL]](https://aclanthology.org/2025.findings-acl.468/) **GA-S³: Comprehensive Social Network Simulation with Group Agents** [PDF](https://aclanthology.org/2025.findings-acl.468.pdf) [🐙 Code](https://github.com/AI4SS/GAS-3)
+  - 简介：GA-S³ 用一个智能体代表行为相近的一群人，避免为每个用户单独调用模型。系统按事件领域和地区逐层细分群体，配置人口数量与特征，再依据记忆、情绪和态度决定浏览、点赞、评论、分享；遗忘和情绪衰减控制影响随时间变化。 **主要结论：** 在包含 30 个事件、每个事件七天流量的 SNB 上，三级群体划分的 MAPE 为 16.48%，优于两级的 33.73% 和一级的 68.78%；去掉记忆或状态也使误差上升。因此，群体压缩需要保留足够细的异质性和时间状态。这里验证的是聚合流量曲线，不是对每个真实用户行为的准确还原。
+
+  [![ga-s3：原论文 Figure 1](assets/social-ga-s3.png)](https://aclanthology.org/2025.findings-acl.468/)
+
+- [[2026-ACL]](https://aclanthology.org/2026.acl-long.569/) **GASim: A Graph-Accelerated Hybrid Framework for Social Simulation** [PDF](https://aclanthology.org/2026.acl-long.569.pdf) [🐙 Repo（代码待发布）](https://github.com/Jasmine0201/GASim)
+  - 简介：GASim 将昂贵的语言生成集中到少数核心成员：每步按邻域意见熵选出核心节点，其余成员用在真实动态意见数据上训练的图注意力网络并行更新。核心成员的记忆则组织成稀疏图，用轻量传播检索，减少额外 LLM 调用。 **主要结论：** 一万成员、30 步、其中 100 个核心成员的实验中，相比 HiSim，总运行时间由约 402 分钟降到 40 分钟，token 约为其五分之一；三个事件数据集的意见趋势匹配指标也优于所比基线。去掉记忆图、神经更新或动态分组都会降低趋势拟合效果。加速来自混合模拟，并非让一万个完整 LLM 同时推理而保持相同成本。
+
+  [![gasim：原论文 Figure 2](https://arxiv.org/html/2605.07692v1/GASim_pipeline.png)](https://aclanthology.org/2026.acl-long.569/)
+
+- [[2026-arXiv]](https://arxiv.org/abs/2607.11895) **AgentSociety 2: An Integrated Research Environment for Executable Social Science** [PDF](https://arxiv.org/pdf/2607.11895v2) [🐙 Code](https://github.com/tsinghua-fib-lab/agentsociety)
+  - 简介：AgentSociety 2 将模拟参与者与负责研究流程的 AI 助手接到同一运行环境：前者在可配置规则下行动，后者协助查文献、设计干预、执行、分析与写作，研究者保留对假设和实验的控制；数据、环境规则及过程记录共同构成可重跑的实验。 **主要结论：** 七类案例展示了流程覆盖能力，也暴露出“结果方向相似、机制仍不一致”的情况：新闻暴露实验重现了部分极化变化方向，但模拟把暴露差异更多归因于订阅选择，原实地研究则更强调排序算法。因此，可执行记录有助于定位偏差，不能仅凭宏观趋势相似宣布模拟有效；社会规范案例还使用规则智能体，并非所有案例都由 LLM 决策。
+
+  [![agentsociety2：原论文 Figure 4](https://arxiv.org/html/2607.11895v2/fig4.png)](https://arxiv.org/abs/2607.11895)
+
+### F4. 人—智能体混合网络与群体互动
+
+- [[2017-Nature]](https://doi.org/10.1038/nature22332) **Locally noisy autonomous agents improve global human coordination in network experiments** [PDF](https://humannaturelab.net/sites/default/files/pdf/paper/Locally-noisy-autonomous-agents-improve-global-human-coordination-in-network-experiments.pdf)
+  - 简介：这项规则机器人研究检验少量局部干预能否改善真人群体协调。参与者在 20 节点网络中选颜色，只看到邻居，目标是消除全部相邻同色；处理组用三个机器人替换三个人，交叉比较机器人位置与 0%、10%、30% 的随机选色概率，其余时候尽量减少局部冲突。 **主要结论：** 高度中心节点上的 10% 噪声机器人最能帮助群体摆脱局部僵局，所测条件下解题中位时间缩短 55.6%；完全贪心容易困住，过多噪声又会制造冲突。机器人价值取决于行为策略和网络位置，其影响也会经真人之间的互动继续传播；这里没有使用 LLM。
+
+  [![noisy-bots：原论文 Figure 2](assets/social-noisy-bots.png)](https://doi.org/10.1038/nature22332)
+
+- [[2020-iScience]](https://doi.org/10.1016/j.isci.2020.101438) **Network Engineering Using Autonomous Agents Increases Cooperation in Human Groups** [PDF](https://humannaturelab.net/sites/default/files/pdf/paper/Network-Engineering-Using-Autonomous-Agents-Increases-Cooperation-in-Human-Groups.pdf) [Code / Data](https://doi.org/10.17632/t963ktp6ft.1)
+  - 简介：在真人重复公共品博弈中，规则机器人除自身合作外，还向邻接用户提供建立或断开人际关系的选项，最终是否改边由人决定。作者比较随机推荐、连接合作者、断开背叛者，以及仅持续合作或以牙还牙的机器人策略，并进一步测试单个机器人。 **主要结论：** 提供断开背叛者选项的处理组，真人合作比例从初始约 60.4% 增至最终 79.4%；只让机器人持续合作或以牙还牙没有阻止群体合作衰退。收益与人际网络重新组织有关，不能归因于机器人自己更友善。该研究使用真实参与者和规则机器人，展示的是通过关系建议改变群体动力学。
+
+  [![network-engineering：原论文 Figure 1](assets/social-network-engineering.png)](https://doi.org/10.1016/j.isci.2020.101438)
+
+- [[2024-Nature Communications]](https://doi.org/10.1038/s41467-024-49528-y) **Simple autonomous agents can enhance creative semantic discovery by human groups** [PDF](https://www.nature.com/articles/s41467-024-49528-y.pdf) [Code / Data](https://doi.org/10.17605/OSF.IO/CS3R2)
+  - 简介：论文用寻找高分词语模拟群体语义探索：每组 15 位真人沿随机网络分享候选词和得分，两个规则机器人在网络不同区域间转发邻居提出的词。机器人分别选择局部最相似、最不相似或随机的词，不知道目标答案；实验还加入不同强度的诱饵局部最优。 **主要结论：** 联网协作优于独立探索，但加机器人没有普遍的主效应；传播相似词的策略在较容易的搜索环境中表现出有利交互效应，传播最不相似的词并未稳定占优。因此，连接远处群体是否有帮助，还取决于传播什么内容以及搜索环境，而不是新颖信息越多越好；这不是 LLM 生成创意的实验。
+
+  [![creative-discovery：原论文 Figure 2](assets/social-creative-discovery.png)](https://doi.org/10.1038/s41467-024-49528-y)
+
+- [[2025-arXiv]](https://arxiv.org/abs/2506.06153) **Personalized Large Language Models Can Increase the Belief Accuracy of Social Networks** [PDF](https://arxiv.org/pdf/2506.06153)
+  - 简介：论文让真实参与者在三轮网络互动中判断政治陈述真伪、阅读意见并重新选择关注对象。对照组读取三名真人的意见，处理组读取两名真人及一个个性化 GPT-4o-mini 机器人的意见；机器人根据用户表达风格和偏好信源生成说明，且事先获得陈述的真伪标签。 **主要结论：** 处理组信念更趋准确，用户还更倾向选择观点准确的真人作为后续信息来源，说明干预不仅改变当下答案，也可能改变之后接触谁。但机器人已获知事实标签，实验不能证明模型能自行发现真相；三轮受控互动也尚不足以证明长期现实社交网络中的效果。
+
+  [![personalized-beliefs：原论文 Figure 1](https://arxiv.org/html/2506.06153v1/ExpSchematic_Treatment.svg)](https://arxiv.org/abs/2506.06153)
+
+- [[2025-CogSci]](https://escholarship.org/uc/item/1zd2k858) **The Dynamics of Collective Creativity in Human-AI Hybrid Societies** [PDF](https://arxiv.org/pdf/2502.17962v3)
+  - 简介：作者在 5×5 网格上比较纯真人、纯 GPT-4o 与人机混合的故事传播：每一代参与者从邻居故事中选择一篇并改写，作品再传给下一代，持续 25 代。真人每人只贡献一次，并非同一批人反复写作；另由人类评委评价创造性，以文本相似度度量故事多样性。 **主要结论：** AI 组的故事获得较高创造性评分，但演化后期，人机混合组的故事多样性超过纯 AI 组；真人更倾向保留故事延续性，AI 更容易远离原始内容。因此，单篇作品的创造性与群体长期保留多少不同想法是不同指标，人机混合的优势主要体现在后者，不能概括为所有指标都优于纯 AI。
+
+  [![collective-creativity：原论文 Figure 1](https://arxiv.org/html/2502.17962v3/figures/overviews.png)](https://escholarship.org/uc/item/1zd2k858)
+
+- [[2026-CHI]](https://doi.org/10.1145/3772318.3790722) **AmongOthers: A Design Speculation for Rethinking AI in Online Social Communities** [PDF](https://naomi-yamashita.net/wp-content/uploads/2026/03/2026jp-02.pdf)
+  - 简介：AmongOthers 构建由 800 个 AI 成员主导的在线社区，让八位真人使用四周，参与发帖、评论与关注。前两周参与者尚不知道社区主要由 AI 构成，随后研究者揭示成员身份，通过持续反思记录和访谈观察他们如何重新理解关系及调整行为。 **主要结论：** 参与者起初常感到温暖、尊重和归属，但过度和谐也带来不真实感；得知 AI 身份后，一部分人继续交往，另一部分降低参与或主动寻找真人。因此，人机社区的体验不仅取决于对话流畅度，还取决于人们怎样理解互动对象。这是小样本、定性设计研究，不能推断多数用户会接受或拒绝 AI 社区。
+
+  [![amongothers：原论文 Figure 2](assets/social-amongothers.png)](https://doi.org/10.1145/3772318.3790722)
